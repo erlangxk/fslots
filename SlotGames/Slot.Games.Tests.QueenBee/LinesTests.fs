@@ -11,7 +11,7 @@ let pl4 = [|2;5;0;9;3|]
 let pl5 = [|7;5;9;9;1|]
 let pl6 = [|2;3;4;4;3|]
 let pl7 = [|7;2;4;2;1|]
-let pl8 = [|2;5;4;9;3|]
+let pl8 = [|4;2;0;2;4|]
 let pl9 = [|4;3;9;4;4|]
 [<Test>]
 let TestOnePayLine () =
