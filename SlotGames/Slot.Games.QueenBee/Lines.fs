@@ -20,3 +20,19 @@ let payLines (lines: Line[]) (snapshot : int[][]) =
     lines |> Array.map (onePayLine snapshot)
 
 
+let consecutiveCount(isWild: int->bool)(lineOfSymbol:int[]) =
+  let len = Array.length lineOfSymbol
+  if  len < 1 then 0
+  else
+      let first = lineOfSymbol.[0]
+      if (isWild first) then 0
+      else 
+          let mutable consecutive = true
+          let mutable index = 1
+          while (index<len && consecutive) do
+             let e = lineOfSymbol.[index]
+             if e = first || isWild e then
+                 index <- index + 1  
+             else
+                 consecutive<-false    
+          index  

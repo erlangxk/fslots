@@ -32,3 +32,23 @@ let TestPayLines () =
         let r = Lines.payLines Lines.allLines ss
         let er = [|pl1;pl2;pl3;pl4;pl5;pl6;pl7;pl8;pl9|]
         Assert.AreEqual(er, r)
+
+
+[<Test>]
+let TestConsecutive1 () =
+    let cf = Lines.consecutiveCount (fun e -> e =3)
+    
+    let r1 = cf [|2;3;4|]
+    Assert.AreEqual(2,r1)
+    
+    let r2 = cf [||]
+    Assert.AreEqual(0,r2)
+    
+    let r3 = cf [|3;3;3|]
+    Assert.AreEqual(0,r3)
+    
+    let r4 = cf [|4;3;4;5;4|]
+    Assert.AreEqual(3, r4)
+    
+    let r4 = cf [|4;3;3;3;4|]
+    Assert.AreEqual(5, r4)
