@@ -21,9 +21,34 @@ let scanTest1 () =
    let expected = Some(4, true)
    Assert.AreEqual(expected, r)
 
+[<Test>]
 let scanTest2 () =
    let cs = Scatter.count 2
-   let cw = Scatter.count 7
+   let cw = Scatter.count 5
    let r = Scatter.scanScatter ss cs cw   
-   let expected = Some(4, true)
+   let expected = Some(3, true)
+   Assert.AreEqual(expected, r)
+   
+[<Test>]
+let countTest1 () =
+   let r = Scatter.countScatter ss 4 5   
+   let expected = Some(5, true),Some(5, true)
+   Assert.AreEqual(expected, r)
+
+[<Test>]
+let countTest2 () =
+   let r = Scatter.countScatter ss 5 4   
+   let expected = None, None
+   Assert.AreEqual(expected, r)
+
+[<Test>]
+let countTest3 () =
+   let r = Scatter.countScatter ss 4 9   
+   let expected = Some(1,false), Some(5,true)
+   Assert.AreEqual(expected, r)
+   
+[<Test>]
+let countTest4 () =
+   let r = Scatter.countScatter ss 3 9
+   let expected = None, Some(4,true)
    Assert.AreEqual(expected, r)
