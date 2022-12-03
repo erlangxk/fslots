@@ -36,6 +36,7 @@ let TestRing () =
 let cs = Scatter.count Symbols.ScatterId
 let cw = Scatter.count Symbols.WildId
 
+//check no more than 2 scatter and/or 2 wild in the spin result
 let checkReel reel =
     let len = Array.length reel
     let mutable i =0
@@ -48,13 +49,26 @@ let checkReel reel =
         let t = (cs result) + (cw result)
         Assert.IsTrue(t<2)
 
-[<Test>]     
-
-let TestFirstReel () =
+[<Test>]
+let TestAllReels () =
+    Assert.AreEqual(5, Levels.l1.Length)
     for r in Levels.l1 do
         checkReel r
+    Assert.AreEqual(5, Levels.l2.Length)
     for r in Levels.l2 do
         checkReel r
+    Assert.AreEqual(5, Levels.l3.Length)
     for r in Levels.l3 do
         checkReel r
-   
+ 
+// check there's no wild symbol in first reel and last reel  
+[<Test>]
+let TestWildInFirst2Last () =
+    Assert.IsFalse(Array.contains Symbols.WildId Levels.l1[0])
+    Assert.IsFalse(Array.contains Symbols.WildId Levels.l2[0])
+    Assert.IsFalse(Array.contains Symbols.WildId Levels.l3[0])
+    Assert.IsFalse(Array.contains Symbols.WildId Levels.l1[Levels.l1.Length-1])
+    Assert.IsFalse(Array.contains Symbols.WildId Levels.l2[Levels.l1.Length-1])
+    Assert.IsFalse(Array.contains Symbols.WildId Levels.l3[Levels.l1.Length-1])
+
+    
