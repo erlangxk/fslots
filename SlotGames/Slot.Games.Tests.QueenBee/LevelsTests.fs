@@ -33,5 +33,28 @@ let TestRing () =
      Assert.AreEqual(Levels.rings 5 -1 3, None)
      Assert.AreEqual(Levels.rings 5 4 6, None)
      
-      
-     
+let cs = Scatter.count Symbols.ScatterId
+let cw = Scatter.count Symbols.WildId
+
+let checkReel reel =
+    let len = Array.length reel
+    let mutable i =0
+    while (i<len) do
+        let ring = Levels.rings len i Levels.height
+        i <- i+1
+        Assert.IsFalse(ring.IsNone)
+        let r = ring.Value
+        let result = Levels.safeSpinOneLine  reel r
+        let t = (cs result) + (cw result)
+        Assert.IsTrue(t<2)
+
+[<Test>]     
+
+let TestFirstReel () =
+    for r in Levels.l1 do
+        checkReel r
+    for r in Levels.l2 do
+        checkReel r
+    for r in Levels.l3 do
+        checkReel r
+   

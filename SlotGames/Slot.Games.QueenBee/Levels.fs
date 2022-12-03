@@ -27,15 +27,15 @@ let l3 = [
       [|2;0;10;3;6;7;0;3;4;1;5;0;4;7;2;5;4;9;7;2;4;5;0;1;7;2;4;7;2;0;8;1;5;6|]
 ]
 
-let private width = 5
-let private height = 3
+let width = 5
+let height = 3
 
 let rings (len:int) (start:int) (size:int) =
       if start >=0 && start< len  && size>0 && size <= len then
            Some(seq { for i in start .. size+start-1 -> i % len })
       else None
 
-let private safeSpinOneLine (reel:Reel) (idx:seq<int>) =
+let safeSpinOneLine (reel:Reel) (idx:seq<int>) =
       map (fun i -> reel[i]) idx
 
 let spinOneLine (size:int) (reel: Reel) (start:int)= 

@@ -20,11 +20,11 @@ let skinnyBee = Map [(5,2500);(4,250);(3,50);(2,5)]
 let beeHives =  Map [(5,1000);(4,100);(3,20);(2,3)]
 let flower   =  Map [(5,1000);(4,100);(3,20);(2,3)]
 let daisy = Map [(5,500);(4,30);(3,10)]
-let ace: Map<int,int>    = Map [(5,300);(4,25);(3,5)]
-let king: Map<int,int>   = Map [(5,200);(4,20);(3,5)]
-let queen: Map<int,int>  = Map [(5,200);(4,20);(3,5)]
-let jack: Map<int,int>   = Map [(5,100);(4,15);(3,5)]
-let ten    = Map [(5,100);(4,15);(3,5)]
+let ace   = Map [(5,300);(4,25);(3,5)]
+let king  = Map [(5,200);(4,20);(3,5)]
+let queen = Map [(5,200);(4,20);(3,5)]
+let jack  = Map [(5,100);(4,15);(3,5)]
+let ten   = Map [(5,100);(4,15);(3,5)]
 
 let scatter = Map [(5,100);(4,10);(3,5);(2,1)]
 
@@ -40,3 +40,6 @@ let payTable = Map[
     (Symbol.Jack, jack);
     (Symbol.Ten, ten)
 ]
+
+let ScatterId = int Symbol.Scatter
+let WildId = int Symbol.Wild
