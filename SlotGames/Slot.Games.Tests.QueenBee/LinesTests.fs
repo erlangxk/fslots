@@ -39,16 +39,42 @@ let TestConsecutive1 () =
     let cf = Lines.consecutiveCount (fun e -> e =3)
     
     let r1 = cf [|2;3;4|]
-    Assert.AreEqual(2,r1)
+    Assert.AreEqual(Some(2,2),r1)
     
     let r2 = cf [||]
-    Assert.AreEqual(0,r2)
+    Assert.AreEqual(None,r2)
     
     let r3 = cf [|3;3;3|]
-    Assert.AreEqual(0,r3)
+    Assert.AreEqual(None,r3)
     
     let r4 = cf [|4;3;4;5;4|]
-    Assert.AreEqual(3, r4)
+    Assert.AreEqual(Some(4,3), r4)
     
     let r4 = cf [|4;3;3;3;4|]
-    Assert.AreEqual(5, r4)
+    Assert.AreEqual(Some(4,5), r4)
+    
+    let r5 = cf [|4;5;3;3;4|]
+    Assert.AreEqual(Some(4,1), r5)
+    
+    
+[<Test>]
+let TestCountForth2Back1 () =
+    let cf = Lines.countForth2Back (fun e -> e =3)
+    
+    let r1 = cf [|2;3;4|]
+    Assert.AreEqual((Some(2,2),Some(4,2)),r1)
+    
+    let r2 = cf [||]
+    Assert.AreEqual((None,None),r2)
+    
+    let r3 = cf [|3;3;3|]
+    Assert.AreEqual((None,None),r3)
+    
+    let r4 = cf [|4;3;4;5;4|]
+    Assert.AreEqual((Some(4,3),Some(4,1)), r4)
+    
+    let r4 = cf [|4;3;3;3;4|]
+    Assert.AreEqual((Some(4,5),Some(4,5)), r4)
+    
+    let r5 = cf [|4;5;3;3;4|]
+    Assert.AreEqual((Some(4,1),Some(4,3)), r5)

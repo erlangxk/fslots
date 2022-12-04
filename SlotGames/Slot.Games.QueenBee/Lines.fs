@@ -1,5 +1,7 @@
 module Slot.Games.QueenBee.Lines
 
+open System.Collections.Generic
+open System.Linq
 type Line = int[]
 let l1 = [|1; 1; 1; 1; 1|]
 let l2 = [|0; 0; 0; 0; 0|]
@@ -20,19 +22,27 @@ let payLines (lines: Line[]) (snapshot : int[][]) =
     lines |> Array.map (onePayLine snapshot)
 
 
-let consecutiveCount(isWild: int->bool)(lineOfSymbol:int[]) =
-  let len = Array.length lineOfSymbol
-  if  len < 1 then 0
-  else
-      let first = lineOfSymbol.[0]
-      if (isWild first) then 0
+let consecutiveCount<'a when 'a : equality>(isWild: 'a->bool)(lineOfSymbol:IEnumerable<'a>) =
+  let iter = lineOfSymbol.GetEnumerator()
+  if iter.MoveNext() then
+      let first = iter.Current
+      if (isWild first) then None
       else 
           let mutable consecutive = true
-          let mutable index = 1
-          while (index<len && consecutive) do
-             let e = lineOfSymbol.[index]
+          let mutable count = 1
+          while (iter.MoveNext() && consecutive) do
+             let e = iter.Current
              if e = first || isWild e then
-                 index <- index + 1  
+                 count <- count + 1  
              else
                  consecutive<-false    
-          index  
+          Some(first,count)
+  else None
+  
+  
+let countForth2Back<'a when 'a : equality>(isWild: 'a->bool)(lineOfSymbol:'a[]) =
+      let l2r = lineOfSymbol.AsEnumerable()
+      let leftResult = consecutiveCount isWild l2r
+      let r2l = lineOfSymbol.Reverse()
+      let rightResult = consecutiveCount isWild r2l
+      (leftResult,rightResult) 
