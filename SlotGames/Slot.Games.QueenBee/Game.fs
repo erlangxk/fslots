@@ -1,5 +1,8 @@
 module Slot.Games.QueenBee.Game
 
+open FSharpPlus.Data
+open Microsoft.FSharp.Core
+open FSharpPlus
 module Level =
     let width = 5
     let height = 3
@@ -75,7 +78,10 @@ module PayTable =
         Ten, ten
     ]
     let queenBeeScatterWin  = Common.PayTable.simpleLookup scatter
-    let queenBeePlainWin  = Common.PayTable.nestedLookup plainPayTable 
+    let queenBeePlainWin  = Common.PayTable.nestedLookup plainPayTable
+    
+    let queenBeeIsWild e = e = Wild
+    let queenBeeIsScatter e = e = Scatter
 
 module Line =
     let l1 = [|1; 1; 1; 1; 1|]
@@ -92,3 +98,81 @@ module Line =
     
     let queenBeePayLines<'a> (snapshot:'a[][])  = Common.Line.payLines allLines snapshot
     
+    let queenBeeCountAllLineTwice = Common.Line.countAllLineTwice PayTable.queenBeeIsWild
+    
+    let queenBeeCountScatter snapshot = Common.Line.countScatter snapshot PayTable.queenBeeIsScatter PayTable.queenBeeIsWild
+module Core =
+    
+    type LineResultTwice<'a> = seq<int * (Common.LineResult<'a> option * Common.LineResult<'a> option)>
+    type Result<'a> = {
+        snapshot: 'a[][]
+        lines: 'a[][]
+        linesResult: LineResultTwice<'a>
+        plainWin: seq<int*(int option * int option)>
+        scatterResult:(int*bool) option *  (int*bool) option
+        scatterWin: int option * int option
+        multiplier:int
+    }
+    let spinLevel1 (random :int -> int) =
+        let ss = Level.queenBeeSpinLevel1(random)
+ 
+        let payLines = Line.queenBeePayLines ss
+        
+        let len = payLines.Length
+        
+        let countAllLines = Line.queenBeeCountAllLineTwice payLines |> Seq.ofArray
+        
+        let plainWin = seq {
+            for line in countAllLines do
+                let i,(l,r) = line
+                let lm = monad {
+                    let! s,c,w = l
+                    let! m = PayTable.queenBeePlainWin s c
+                    return if w then m*2 else m
+                }
+                let rm = monad {
+                    let! s,c,w = r
+                    let! m = PayTable.queenBeePlainWin s c
+                    return if w then m*2 else m
+                }
+                yield i,(lm,rm)
+        }
+        let countScatter = Line.queenBeeCountScatter ss
+        let scatterWin =
+            let (sl, sr) = countScatter
+            
+            let slm = monad {
+                let! c,w = sl
+                let! m = PayTable.queenBeeScatterWin c
+                return if w then m*2 else m
+            }
+                
+            let srm =monad {
+                let! c,w = sl
+                let! m = PayTable.queenBeeScatterWin c
+                return if w then m*2 else m
+            }
+            slm,srm
+        
+        let folder s e= s + e*len 
+        
+        let slm,srm = scatterWin
+        let mslm =  Option.fold folder 0 slm
+        let msrm =  Option.fold folder 0 srm
+        
+        let folder2 s e =
+            let _,(l,r) = e
+            let ml =  Option.fold folder 0 l
+            let mr =  Option.fold folder 0 r
+            ml+mr+s
+            
+        let pwm = Seq.fold folder2 0 plainWin
+        {
+            snapshot = ss
+            lines = payLines
+            linesResult = countAllLines
+            plainWin = plainWin
+            scatterResult = countScatter
+            scatterWin = scatterWin
+            multiplier = mslm + msrm + pwm
+        }
