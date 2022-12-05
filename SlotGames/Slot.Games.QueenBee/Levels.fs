@@ -30,9 +30,12 @@ let l3 = [
 let width = 5
 let height = 3
 
+let safeRings(len:int)(start:int)(size:int) =
+    seq { for i in start .. size+start-1 -> i % len }
+
 let rings (len:int) (start:int) (size:int) =
       if start >=0 && start< len  && size>0 && size <= len then
-           Some(seq { for i in start .. size+start-1 -> i % len })
+           Some(safeRings len start size)
       else None
 
 let safeSpinOneLine (reel:Reel) (idx:seq<int>) =
@@ -59,4 +62,3 @@ let spin (reels: Reel list) (starts: int list) (size:int ) =
 let queenBeeSpin (lists: Reel list)  (starts :int list) =
       if lists.Length <> width|| starts.Length <> width  then None
       else spin lists starts height
-      

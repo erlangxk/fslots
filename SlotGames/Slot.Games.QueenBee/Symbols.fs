@@ -1,18 +1,19 @@
 module Slot.Games.QueenBee.Symbols
 
-type Symbol =
-    | Ten = 0
-    | Jack = 1
-    | Queen = 2
-    | King = 3
-    | Ace = 4
-    | Daisy = 5
-    | Flower =6
-    | BeeHives = 7
-    | SkinnyBee = 8
-    | FatBee = 9
-    | Scatter = 10
-    | Wild = 11
+open FSharpPlus
+module Symbol =
+    let Ten = 0
+    let Jack = 1
+    let Queen = 2
+    let King = 3
+    let Ace = 4
+    let Daisy = 5
+    let Flower =6
+    let BeeHives = 7
+    let SkinnyBee = 8
+    let FatBee = 9
+    let Scatter = 10
+    let Wild = 11
 
 
 let fatBee    = Map [(5,5000);(4,500);(3,100);(2,10);(1,2)]
@@ -28,18 +29,30 @@ let ten   = Map [(5,100);(4,15);(3,5)]
 
 let scatter = Map [(5,100);(4,10);(3,5);(2,1)]
 
-let payTable = Map[
-    (Symbol.FatBee,fatBee);
-    (Symbol.SkinnyBee, skinnyBee);
-    (Symbol.BeeHives, beeHives);
-    (Symbol.Flower, flower);
-    (Symbol.Daisy, daisy);
-    (Symbol.Ace, ace);
-    (Symbol.King, king);
-    (Symbol.Queen, queen);
-    (Symbol.Jack, jack);
-    (Symbol.Ten, ten)
+let plainPayTable:Map<int, Map<int,int>> = Map[
+    Symbol.FatBee,fatBee;
+    Symbol.SkinnyBee, skinnyBee;
+    Symbol.BeeHives, beeHives;
+    Symbol.Flower, flower;
+    Symbol.Daisy, daisy;
+    Symbol.Ace, ace;
+    Symbol.King, king;
+    Symbol.Queen, queen;
+    Symbol.Jack, jack;
+    Symbol.Ten, ten
 ]
 
-let ScatterId = int Symbol.Scatter
-let WildId = int Symbol.Wild
+let ScatterId = Symbol.Scatter
+let WildId = Symbol.Wild
+
+let inline simpleLookup table count= Map.tryFind count table
+
+let nestedLookup table symbol count=
+    monad {
+      let! t = Map.tryFind symbol table
+      return! simpleLookup t count
+    }
+    
+let queenBeeScatterWin count = simpleLookup  count scatter
+     
+let queenBeePlainWin  = nestedLookup plainPayTable 
