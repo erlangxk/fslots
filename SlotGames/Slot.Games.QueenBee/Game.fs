@@ -31,8 +31,10 @@ module Level =
     Common.Level.checkLevel l2 width height
     Common.Level.checkLevel l3 width height
     
-    let queenBeeSpin (lists: int[] list)  (random :int -> int) = Common.Level.randomSpin lists height random
-    
+    let queenBeeSpin<'a> (level: 'a[] list)  (random :int -> int) = Common.Level.randomSpin level height random
+    let queenBeeSpinLevel1 (random :int -> int) = queenBeeSpin l1 random
+    let queenBeeSpinLevel2 (random :int -> int) = queenBeeSpin l2 random
+    let queenBeeSpinLevel3 (random :int -> int) = queenBeeSpin l3 random
 module PayTable =
     let Ten = 0
     let Jack = 1
@@ -88,5 +90,5 @@ module Line =
     
     let  allLines = [|l1; l2; l3; l4; l5; l6; l7; l8; l9|]
     
-    let queenBeePayLines  = Common.Line.payLines allLines
+    let queenBeePayLines<'a> (snapshot:'a[][])  = Common.Line.payLines allLines snapshot
     

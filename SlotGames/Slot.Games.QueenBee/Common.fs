@@ -4,7 +4,7 @@ open FSharpPlus
 open System.Collections.Generic
 open System.Linq
 
-type Reel = int []
+type Reel<'a> = 'a[]
 
 module PayTable =
     let inline simpleLookup table count = Map.tryFind count table
@@ -16,7 +16,7 @@ module PayTable =
         }
 
 module Level =
-    let checkLevel (level: Reel list) (width: int) (height: int) =
+    let checkLevel<'a> (level: 'a[] list) (width: int) (height: int) =
         let rsl = List.length level
 
         if rsl <> width then
@@ -28,14 +28,14 @@ module Level =
                 if rl < height then
                     invalidArg (nameof (level)) $"reel of level should NOT less than {height}, but got {rl}"
 
-    let safePick reel = map (Array.get reel) 
+    let safePick<'a> (reel:Reel<'a>)(idx: seq<int>) = Seq.map (Array.get reel) idx
 
     let safeRings (len: int) (start: int) (size: int) =
         seq { for i in start .. size + start - 1 -> i % len }
 
     let fakeRandomSeq (list:list<int>) =
          let state = list.AsEnumerable().GetEnumerator()
-         let rec f i =
+         let rec f (i:int) =
              if state.MoveNext() then
                  state.Current
              else
@@ -46,7 +46,7 @@ module Level =
     let randomIdx (lens: seq<int>) (height: int) (random: int -> int) =
         [ for len in lens -> safeRings len (random len) height ]
 
-    let randomSpin (reels: Reel list) (height: int) (random: int -> int) =
+    let randomSpin<'a> (reels: Reel<'a> list) (height: int) (random: int -> int) =
         let lens =
             seq { for l in reels -> Array.length l }
 
@@ -58,10 +58,10 @@ module Level =
 
 type LineResult<'a> = 'a * int * bool       
 module Line =
-    let onePayLine(snapshot: int[][]) =
+    let onePayLine<'a>(snapshot: 'a[][]) =
         Array.mapi( fun i j -> snapshot.[i].[j])
     
-    let payLines (lines: int[][]) (snapshot : int[][]) = 
+    let payLines<'a> (lines: int[][]) (snapshot : 'a[][]) = 
         lines |> Array.map (onePayLine snapshot)
     
     let countLineOnce<'a when 'a: equality> (isWild: 'a -> bool) (lineOfSymbol: IEnumerable<'a>) : option<LineResult<'a>>=
@@ -101,10 +101,10 @@ module Line =
     let countAllLineTwice<'a when 'a: equality>(isWild: 'a->bool)(linesOfSymbol: 'a[][]) =
        linesOfSymbol |> Array.mapi (fun i line -> (i, countLineTwice isWild line))
     
-    let countSymbol (test:int->bool) =
+    let countSymbol<'a> (test:'a->bool) =
         Seq.fold (fun s t -> if (test t) then s + 1 else s) 0
         
-    let scanScatter (ss: IEnumerator<Reel>) (countScatter: seq<int> -> int) (countWild: seq<int> -> int) =
+    let scanScatter<'a> (ss: IEnumerator<Reel<'a>>) (countScatter: seq<'a> -> int) (countWild: seq<'a> -> int) =
         if ss.MoveNext() then 
             let first = countScatter ss.Current
             if first > 0 then
@@ -126,7 +126,7 @@ module Line =
                 None
         else None
 
-    let countScatter (snapshot: int[][]) (isScatter:int->bool) (isWild: int->bool) =
+    let countScatter<'a> (snapshot: 'a[][]) (isScatter:'a->bool) (isWild: 'a->bool) =
             let cs = countSymbol isScatter
             let cw = countSymbol isWild
             let el2r = snapshot.AsEnumerable().GetEnumerator()
