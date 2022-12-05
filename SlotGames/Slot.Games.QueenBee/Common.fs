@@ -33,6 +33,16 @@ module Level =
     let safeRings (len: int) (start: int) (size: int) =
         seq { for i in start .. size + start - 1 -> i % len }
 
+    let fakeRandomSeq (list:list<int>) =
+         let state = list.AsEnumerable().GetEnumerator()
+         let rec f i =
+             if state.MoveNext() then
+                 state.Current
+             else
+                 state.Reset()
+                 f i
+         f
+    
     let randomIdx (lens: seq<int>) (height: int) (random: int -> int) =
         [ for len in lens -> safeRings len (random len) height ]
 
