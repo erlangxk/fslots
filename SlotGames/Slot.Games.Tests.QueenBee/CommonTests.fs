@@ -99,3 +99,111 @@ let randomIdx1 () =
     ]
     Assert.AreEqual(e, r)
     
+[<Test>]
+let randomSpin () =
+    let level = [
+        [|1;2;3;4|]
+        [|5;6;7;8;9|]
+        [|10;11;12|]
+    ]
+    let random = Common.Level.fakeRandomSeq [1;4;0]
+    let r = Common.Level.randomSpin level 2 random
+    let e = [|
+        [|2;3|]
+        [|9;5|]
+        [|10;11|]
+    |]
+    Assert.AreEqual(e, r)
+   
+let ss = [|[|2;4;7|];[|3;5;2|];[|9;4;0|];[|4;9;2|];[|3;4;1|]|]
+let pl1 = [|4;5;4;9;4|]
+let pl2 = [|2;3;9;4;3|]
+let pl3 = [|7;2;0;2;1|]
+let pl4 = [|2;5;0;9;3|]
+let pl5 = [|7;5;9;9;1|]
+let pl6 = [|2;3;4;4;3|]
+let pl7 = [|7;2;4;2;1|]
+let pl8 = [|4;2;0;2;4|]
+let pl9 = [|4;3;9;4;4|]
+
+[<Test>]
+let payLine () =
+    let pl = Common.Line.onePayLine ss
+    Assert.AreEqual(pl1, pl Game.Line.l1)
+    Assert.AreEqual(pl2, pl Game.Line.l2)
+    Assert.AreEqual(pl3, pl Game.Line.l3)
+    Assert.AreEqual(pl4, pl Game.Line.l4)
+    Assert.AreEqual(pl5, pl Game.Line.l5)
+    Assert.AreEqual(pl6, pl Game.Line.l6)
+    Assert.AreEqual(pl7, pl Game.Line.l7)
+    Assert.AreEqual(pl8, pl Game.Line.l8)
+    Assert.AreEqual(pl9, pl Game.Line.l9)
+    
+   
+[<Test>]
+let payLines () =
+        let r = Common.Line.payLines Game.Line.allLines ss
+        let er = [|pl1;pl2;pl3;pl4;pl5;pl6;pl7;pl8;pl9|]
+        Assert.AreEqual(er, r)
+
+
+[<Test>]
+let countLineOnce () =
+    let cf = Common.Line.countLineOnce (fun e -> e =3)
+    
+    let r1 = cf [|2;3;4|]
+    Assert.AreEqual(Some(2,2,true),r1)
+    
+    let r2 = cf [||]
+    Assert.AreEqual(None,r2)
+    
+    let r3 = cf [|3;3;3|]
+    Assert.AreEqual(None,r3)
+    
+    let r4 = cf [|4;3;4;5;4|]
+    Assert.AreEqual(Some(4,3,true), r4)
+    
+    let r4 = cf [|4;3;3;3;4|]
+    Assert.AreEqual(Some(4,5,true), r4)
+    
+    let r5 = cf [|4;5;3;3;4|]
+    Assert.AreEqual(Some(4,1,false), r5)
+    
+    
+[<Test>]
+let countLineTwice () =
+    let cf = Common.Line.countLineTwice(fun e -> e =3)
+    
+    let r1 = cf [|2;3;4|]
+    Assert.AreEqual((Some(2,2,true),Some(4,2,true)),r1)
+    
+    let r2 = cf [||]
+    Assert.AreEqual((None,None),r2)
+    
+    let r3 = cf [|3;3;3|]
+    Assert.AreEqual((None,None),r3)
+    
+    let r4 = cf [|4;3;4;5;4|]
+    Assert.AreEqual((Some(4,3,true),Some(4,1,false)), r4)
+    
+    let r4 = cf [|4;3;3;3;4|]
+    Assert.AreEqual((Some(4,5,true),Some(4,5,true)), r4)
+    
+    let r5 = cf [|4;5;3;3;4|]
+    Assert.AreEqual((Some(4,1,false),Some(4,3,true)), r5)
+    
+    
+[<Test>]
+let countAllLineTwice () =
+    let cf = Common.Line.countAllLineTwice(fun e -> e =4)
+    let lines = [|
+            [|2;3;9;4;3|]
+            [|7;2;0;2;1|]
+    |]
+    let er = [|
+        0,(Some(2,1,false),Some(3,2,true))
+        1,(Some(7,1,false),Some(1,1,false))
+    |]
+    
+    let rr = cf lines
+    Assert.AreEqual(er, rr)

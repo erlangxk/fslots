@@ -33,7 +33,7 @@ module Level =
     
     let queenBeeSpin (lists: int[] list)  (random :int -> int) = Common.Level.randomSpin lists height random
     
-module Symbol =
+module PayTable =
     let Ten = 0
     let Jack = 1
     let Queen = 2
@@ -72,6 +72,21 @@ module Symbol =
         Jack, jack;
         Ten, ten
     ]
+    let queenBeeScatterWin  = Common.PayTable.simpleLookup scatter
+    let queenBeePlainWin  = Common.PayTable.nestedLookup plainPayTable 
+
+module Line =
+    let l1 = [|1; 1; 1; 1; 1|]
+    let l2 = [|0; 0; 0; 0; 0|]
+    let l3 = [|2; 2; 2; 2; 2|]  
+    let l4 = [|0; 1; 2; 1; 0|]
+    let l5 = [|2; 1; 0; 1; 2|]
+    let l6 = [|0; 0; 1; 0; 0|]
+    let l7 = [|2; 2; 1; 2; 2|]
+    let l8 = [|1; 2; 2; 2; 1|]
+    let l9 = [|1; 0; 0; 0; 1|]
     
-    let queenBeeScatterWin  = Common.Symbol.simpleLookup scatter
-    let queenBeePlainWin  = Common.Symbol.nestedLookup plainPayTable 
+    let  allLines = [|l1; l2; l3; l4; l5; l6; l7; l8; l9|]
+    
+    let queenBeePayLines  = Common.Line.payLines allLines
+    

@@ -53,6 +53,6 @@ let nestedLookup table symbol count=
       return! simpleLookup t count
     }
     
-let queenBeeScatterWin count = simpleLookup  count scatter
+let queenBeeScatterWin = simpleLookup  scatter
      
 let queenBeePlainWin  = nestedLookup plainPayTable 

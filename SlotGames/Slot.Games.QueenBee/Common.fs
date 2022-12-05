@@ -54,24 +54,17 @@ module Level =
 
         Seq.map2 (fun reel is -> (safePick reel is) |> Seq.toArray) reels idx
         |> Seq.toArray
+ 
 
-
-module Symbol =
-    let inline simpleLookup table count = Map.tryFind count table
-
-    let nestedLookup table symbol count =
-        monad {
-            let! t = Map.tryFind symbol table
-            return! simpleLookup t count
-        }
-
+type LineResult<'a> = 'a * int * bool       
 module Line =
-    let onePayLine (snapshot: int [] []) =
-        Array.mapi (fun i j -> snapshot.[i].[j])
-
-    let payLines (snapshot: int [] []) = Array.map (onePayLine snapshot)
-
-    let consecutiveCount<'a when 'a: equality> (isWild: 'a -> bool) (lineOfSymbol: IEnumerable<'a>) =
+    let onePayLine(snapshot: int[][]) =
+        Array.mapi( fun i j -> snapshot.[i].[j])
+    
+    let payLines (lines: int[][]) (snapshot : int[][]) = 
+        lines |> Array.map (onePayLine snapshot)
+    
+    let countLineOnce<'a when 'a: equality> (isWild: 'a -> bool) (lineOfSymbol: IEnumerable<'a>) : option<LineResult<'a>>=
         let iter = lineOfSymbol.GetEnumerator()
 
         if iter.MoveNext() then
@@ -82,25 +75,62 @@ module Line =
             else
                 let mutable consecutive = true
                 let mutable count = 1
-
+                let mutable replace  = false
                 while (iter.MoveNext() && consecutive) do
                     let e = iter.Current
-
-                    if e = first || isWild e then
+                    let w = isWild e
+                    replace <- replace || w
+                    if e = first || w then
                         count <- count + 1
                     else
                         consecutive <- false
 
-                Some(first, count)
+                Some(first, count, replace)
         else
             None
 
-    let countForth2Back<'a when 'a: equality> (isWild: 'a -> bool) (lineOfSymbol: 'a []) =
+    let countLineTwice<'a when 'a: equality> (isWild: 'a -> bool) (lineOfSymbol: 'a []) =
         let l2r = lineOfSymbol.AsEnumerable()
-        let leftResult = consecutiveCount isWild l2r
+        let leftResult = countLineOnce isWild l2r
+        
         let r2l = lineOfSymbol.Reverse()
+        let rightResult = countLineOnce isWild r2l
 
-        let rightResult =
-            consecutiveCount isWild r2l
+        (leftResult, rightResult)
+        
+    let countAllLineTwice<'a when 'a: equality>(isWild: 'a->bool)(linesOfSymbol: 'a[][]) =
+       linesOfSymbol |> Array.mapi (fun i line -> (i, countLineTwice isWild line))
+    
+    let countSymbol (test:int->bool) =
+        Seq.fold (fun s t -> if (test t) then s + 1 else s) 0
+        
+    let scanScatter (ss: IEnumerator<Reel>) (countScatter: seq<int> -> int) (countWild: seq<int> -> int) =
+        if ss.MoveNext() then 
+            let first = countScatter ss.Current
+            if first > 0 then
+                let mutable consecutive = true
+                let mutable total = first
+                let mutable replace = false
+                while (ss.MoveNext() && consecutive) do
+                    let reel = ss.Current
+                    let si = countScatter reel
+                    let wi = countWild reel
+                    let ti = si + wi
+                    if ti>0 then
+                         total <- total + ti
+                    else
+                        consecutive <- false
+                    if wi > 0 then replace <- true
+                Some(total, replace)
+            else
+                None
+        else None
 
-        (leftResult, rightResult) 
+    let countScatter (snapshot: int[][]) (isScatter:int->bool) (isWild: int->bool) =
+            let cs = countSymbol isScatter
+            let cw = countSymbol isWild
+            let el2r = snapshot.AsEnumerable().GetEnumerator()
+            let rl = scanScatter el2r cs cw
+            let er2l = snapshot.Reverse().GetEnumerator()
+            let rr = scanScatter er2l cs cw
+            rl,rr
