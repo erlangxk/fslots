@@ -146,10 +146,12 @@ let payLines () =
         let er = [|pl1;pl2;pl3;pl4;pl5;pl6;pl7;pl8;pl9|]
         Assert.AreEqual(er, r)
 
+let equal i =  fun j-> i=j 
+
 
 [<Test>]
 let countLineOnce () =
-    let cf = Common.Line.countLineOnce (fun e -> e =3)
+    let cf = Common.Line.countLineOnce (equal 3)
     
     let r1 = cf [|2;3;4|]
     Assert.AreEqual(Some(2,2,true),r1)
@@ -172,7 +174,7 @@ let countLineOnce () =
     
 [<Test>]
 let countLineTwice () =
-    let cf = Common.Line.countLineTwice(fun e -> e =3)
+    let cf = Common.Line.countLineTwice(equal 3)
     
     let r1 = cf [|2;3;4|]
     Assert.AreEqual((Some(2,2,true),Some(4,2,true)),r1)
@@ -195,7 +197,7 @@ let countLineTwice () =
     
 [<Test>]
 let countAllLineTwice () =
-    let cf = Common.Line.countAllLineTwice(fun e -> e =4)
+    let cf = Common.Line.countAllLineTwice(equal 4)
     let lines = [|
             [|2;3;9;4;3|]
             [|7;2;0;2;1|]
@@ -207,3 +209,55 @@ let countAllLineTwice () =
     
     let rr = cf lines
     Assert.AreEqual(er, rr)
+    
+    
+[<Test>]
+let countSymbolTest () =
+   let count = Common.Line.countSymbol (equal 2)
+   Assert.AreEqual(1,  count [2;4;7])
+   Assert.AreEqual(2,  count [2;2;7])
+   Assert.AreEqual(3,  count [2;2;2])
+   Assert.AreEqual(0,  count [0;1;3])
+   Assert.AreEqual(0,  count [])
+
+[<Test>]
+let scanTest1 () =
+   let cs = Common.Line.countSymbol (equal 2)
+   let cw = Common.Line.countSymbol (equal 0)
+   let r = Common.Line.scanScatter ss cs cw   
+   let expected = Some(4, true)
+   Assert.AreEqual(expected, r)
+   
+[<Test>]
+let scanTest2 () =
+   let cs = Common.Line.countSymbol (equal 2)
+   let cw = Common.Line.countSymbol (equal 5)
+   let r = Common.Line.scanScatter ss cs cw   
+   let expected = Some(3, true)
+   Assert.AreEqual(expected, r)
+   
+[<Test>]
+let countTest1 () =
+   let r = Common.Line.countScatter ss  (equal 4) (equal 5)
+   let expected = Some(5, true),Some(5, true)
+   Assert.AreEqual(expected, r)
+   
+[<Test>]
+let countTest2 () =
+   let r = Common.Line.countScatter ss  (equal 5) (equal 4)
+   let expected = None, None
+   Assert.AreEqual(expected, r)
+ 
+
+[<Test>]
+let countTest3 () =
+   let r = Common.Line.countScatter ss  (equal 4) (equal 9)
+   let expected = Some(1,false), Some(5,true)
+   Assert.AreEqual(expected, r)
+  
+   
+[<Test>]
+let countTest4 () =
+   let r = Common.Line.countScatter ss  (equal 3) (equal 9)
+   let expected = None, Some(4,true)
+   Assert.AreEqual(expected, r)

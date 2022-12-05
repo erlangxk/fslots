@@ -104,15 +104,16 @@ module Line =
     let countSymbol<'a> (test:'a->bool) =
         Seq.fold (fun s t -> if (test t) then s + 1 else s) 0
         
-    let scanScatter<'a> (ss: IEnumerator<Reel<'a>>) (countScatter: seq<'a> -> int) (countWild: seq<'a> -> int) =
-        if ss.MoveNext() then 
-            let first = countScatter ss.Current
+    let scanScatter<'a> (ss: IEnumerable<Reel<'a>>) (countScatter: seq<'a> -> int) (countWild: seq<'a> -> int) =
+        let iter = ss.GetEnumerator()
+        if iter.MoveNext() then 
+            let first = countScatter iter.Current
             if first > 0 then
                 let mutable consecutive = true
                 let mutable total = first
                 let mutable replace = false
-                while (ss.MoveNext() && consecutive) do
-                    let reel = ss.Current
+                while (iter.MoveNext() && consecutive) do
+                    let reel = iter.Current
                     let si = countScatter reel
                     let wi = countWild reel
                     let ti = si + wi
@@ -129,8 +130,8 @@ module Line =
     let countScatter<'a> (snapshot: 'a[][]) (isScatter:'a->bool) (isWild: 'a->bool) =
             let cs = countSymbol isScatter
             let cw = countSymbol isWild
-            let el2r = snapshot.AsEnumerable().GetEnumerator()
+            let el2r = snapshot.AsEnumerable()
             let rl = scanScatter el2r cs cw
-            let er2l = snapshot.Reverse().GetEnumerator()
+            let er2l = snapshot.Reverse()
             let rr = scanScatter er2l cs cw
             rl,rr
