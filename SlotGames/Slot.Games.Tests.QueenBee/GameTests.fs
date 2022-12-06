@@ -3,6 +3,7 @@ module Slot.Games.Tests.QueenBee.GameTests
 
 open NUnit.Framework
 open Slot.Games.QueenBee
+open System.Linq
 
 let random = System.Random()
 
