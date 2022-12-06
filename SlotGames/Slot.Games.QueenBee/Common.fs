@@ -43,10 +43,10 @@ module Level =
                  f i
          f
     
-    let randomIdx (lens: seq<int>) (height: int) (random: int -> int) =
+    let randomIdx (lens: seq<int>)(height: int)(random: int -> int) =
         [ for len in lens -> safeRings len (random len) height ]
 
-    let randomSpin<'a> (reels: Reel<'a> list) (height: int) (random: int -> int) =
+    let randomSpin<'a> (height: int)(reels: Reel<'a> list)(random: int -> int) =
         let lens =
             seq { for l in reels -> Array.length l }
 

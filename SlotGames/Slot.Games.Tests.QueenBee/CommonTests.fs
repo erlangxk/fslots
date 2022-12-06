@@ -76,8 +76,6 @@ let safeRings1 () =
     Assert.AreEqual([3;4;0;1;2],r4)
     
 
-
-
 [<Test>]
 let fakeRandomSeq1 () =
     let f = Common.Level.fakeRandomSeq [3;4;5]
@@ -107,7 +105,7 @@ let randomSpin () =
         [|10;11;12|]
     ]
     let random = Common.Level.fakeRandomSeq [1;4;0]
-    let r = Common.Level.randomSpin level 2 random
+    let r = Common.Level.randomSpin 2 level random
     let e = [|
         [|2;3|]
         [|9;5|]
@@ -203,8 +201,8 @@ let countAllLineTwice () =
             [|7;2;0;2;1|]
     |]
     let er = [|
-        0,(Some(2,1,false),Some(3,2,true))
-        1,(Some(7,1,false),Some(1,1,false))
+        Some(2,1,false),Some(3,2,true)
+        Some(7,1,false),Some(1,1,false)
     |]
     
     let rr = cf lines

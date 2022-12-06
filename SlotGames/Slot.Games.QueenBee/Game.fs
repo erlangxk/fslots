@@ -3,6 +3,7 @@ module Slot.Games.QueenBee.Game
 open FSharpPlus.Data
 open Microsoft.FSharp.Core
 open FSharpPlus
+open Common
 module Level =
     let width = 5
     let height = 3
@@ -34,10 +35,10 @@ module Level =
     Common.Level.checkLevel l2 width height
     Common.Level.checkLevel l3 width height
     
-    let queenBeeSpin<'a> (level: 'a[] list)  (random :int -> int) = Common.Level.randomSpin level height random
-    let queenBeeSpinLevel1 (random :int -> int) = queenBeeSpin l1 random
-    let queenBeeSpinLevel2 (random :int -> int) = queenBeeSpin l2 random
-    let queenBeeSpinLevel3 (random :int -> int) = queenBeeSpin l3 random
+    let queenBeeSpin = Common.Level.randomSpin height
+    let queenBeeSpinLevel1  = queenBeeSpin l1
+    let queenBeeSpinLevel2  = queenBeeSpin l2
+    let queenBeeSpinLevel3  = queenBeeSpin l3
 module PayTable =
     let Ten = 0
     let Jack = 1
@@ -77,8 +78,8 @@ module PayTable =
         Jack, jack;
         Ten, ten
     ]
-    let queenBeeScatterWin  = Common.PayTable.simpleLookup scatter
-    let queenBeePlainWin  = Common.PayTable.nestedLookup plainPayTable
+    let queenBeeScatterWin  = PayTable.simpleLookup scatter
+    let queenBeePlainWin  = PayTable.nestedLookup plainPayTable
     
     let queenBeeIsWild e = e = Wild
     let queenBeeIsScatter e = e = Scatter
@@ -96,14 +97,14 @@ module Line =
     
     let  allLines = [|l1; l2; l3; l4; l5; l6; l7; l8; l9|]
     
-    let queenBeePayLines<'a> (snapshot:'a[][])  = Common.Line.payLines allLines snapshot
+    let queenBeePayLines  = Line.payLines allLines
     
-    let queenBeeCountAllLineTwice = Common.Line.countAllLineTwice PayTable.queenBeeIsWild
+    let queenBeeCountAllLineTwice = Line.countAllLineTwice PayTable.queenBeeIsWild
     
-    let queenBeeCountScatter snapshot = Common.Line.countScatter snapshot PayTable.queenBeeIsScatter PayTable.queenBeeIsWild
+    let queenBeeCountScatter snapshot = Line.countScatter snapshot PayTable.queenBeeIsScatter PayTable.queenBeeIsWild
 module Core =
     
-    type LineResultTwice<'a> = seq<Common.LineResult<'a> option * Common.LineResult<'a> option>
+    type LineResultTwice<'a> = seq<LineResult<'a> option * LineResult<'a> option>
     type Result<'a> = {
         snapshot: 'a[][]
         lines: 'a[][]
