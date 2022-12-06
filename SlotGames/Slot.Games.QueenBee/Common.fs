@@ -102,7 +102,7 @@ module Line =
        linesOfSymbol |> Array.map (countLineTwice isWild)
     
     let countSymbol<'a> (test:'a->bool) =
-        Seq.fold (fun s t -> if (test t) then s + 1 else s) 0
+        Seq.sumBy (fun x -> if test x then 1 else 0)
         
     let scanScatter<'a> (ss: seq<Reel<'a>>) (countScatter: seq<'a> -> int) (countWild: seq<'a> -> int) =
         let iter = ss.GetEnumerator()
