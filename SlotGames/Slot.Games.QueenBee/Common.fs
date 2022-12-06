@@ -56,7 +56,7 @@ module Level =
         |> Seq.toArray
  
 
-type LineResult<'a> = 'a * int * bool       
+type LineResult<'a> = option<'a * int * bool>
 module Line =
     let onePayLine<'a>(snapshot: 'a[][]) =
         Array.mapi( fun i j -> snapshot.[i].[j])
@@ -64,7 +64,7 @@ module Line =
     let payLines<'a> (lines: int[][]) (snapshot : 'a[][]) = 
         lines |> Array.map (onePayLine snapshot)
     
-    let countLineOnce<'a when 'a: equality> (isWild: 'a -> bool) (lineOfSymbol: seq<'a>) : option<LineResult<'a>>=
+    let countLineOnce<'a when 'a: equality> (isWild: 'a -> bool) (lineOfSymbol: seq<'a>) : LineResult<'a>=
         let iter = lineOfSymbol.GetEnumerator()
 
         if iter.MoveNext() then
@@ -104,8 +104,8 @@ module Line =
     let countSymbol<'a> (test:'a->bool) =
         Seq.sumBy (fun x -> if test x then 1 else 0)
         
-    let scanScatter<'a> (ss: seq<Reel<'a>>) (countScatter: seq<'a> -> int) (countWild: seq<'a> -> int) =
-        let iter = ss.GetEnumerator()
+    let scanScatter<'a> (snapshot: seq<'a[]>) (countScatter: seq<'a> -> int) (countWild: seq<'a> -> int) =
+        let iter = snapshot.GetEnumerator()
         if iter.MoveNext() then 
             let first = countScatter iter.Current
             if first > 0 then
