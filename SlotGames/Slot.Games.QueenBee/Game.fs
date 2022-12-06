@@ -65,7 +65,7 @@ module PayTable =
 
     let scatter = Map [(5,100);(4,10);(3,5);(2,1)]
 
-    let plainPayTable:Map<int, Map<int,int>> = Map[
+    let plainPayTable = Map[
         FatBee,fatBee;
         SkinnyBee, skinnyBee;
         BeeHives, beeHives;
@@ -103,12 +103,12 @@ module Line =
     let queenBeeCountScatter snapshot = Common.Line.countScatter snapshot PayTable.queenBeeIsScatter PayTable.queenBeeIsWild
 module Core =
     
-    type LineResultTwice<'a> = seq<int * (Common.LineResult<'a> option * Common.LineResult<'a> option)>
+    type LineResultTwice<'a> = seq<Common.LineResult<'a> option * Common.LineResult<'a> option>
     type Result<'a> = {
         snapshot: 'a[][]
         lines: 'a[][]
         linesResult: LineResultTwice<'a>
-        plainWin: seq<int*(int option * int option)>
+        plainWin: seq<int option * int option>
         scatterResult:(int*bool) option *  (int*bool) option
         scatterWin: int option * int option
         multiplier:int
@@ -124,7 +124,7 @@ module Core =
         
         let plainWin = seq {
             for line in countAllLines do
-                let i,(l,r) = line
+                let l,r = line
                 let lm = monad {
                     let! s,c,w = l
                     let! m = PayTable.queenBeePlainWin s c
@@ -135,7 +135,7 @@ module Core =
                     let! m = PayTable.queenBeePlainWin s c
                     return if w then m*2 else m
                 }
-                yield i,(lm,rm)
+                yield lm,rm
         }
         let countScatter = Line.queenBeeCountScatter ss
         let scatterWin =
@@ -161,7 +161,7 @@ module Core =
         let msrm =  Option.fold folder 0 srm
         
         let folder2 s e =
-            let _,(l,r) = e
+            let l,r = e
             let ml =  Option.fold folder 0 l
             let mr =  Option.fold folder 0 r
             ml+mr+s

@@ -16,7 +16,7 @@ module PayTable =
         }
 
 module Level =
-    let checkLevel<'a> (level: 'a[] list) (width: int) (height: int) =
+    let checkLevel<'a> (level: Reel<'a> list) (width: int) (height: int) =
         let rsl = List.length level
 
         if rsl <> width then
@@ -33,8 +33,8 @@ module Level =
     let safeRings (len: int) (start: int) (size: int) =
         seq { for i in start .. size + start - 1 -> i % len }
 
-    let fakeRandomSeq (list:list<int>) =
-         let state = list.AsEnumerable().GetEnumerator()
+    let fakeRandomSeq (numbers:seq<int>) =
+         let state = numbers.GetEnumerator()
          let rec f (i:int) =
              if state.MoveNext() then
                  state.Current
@@ -64,7 +64,7 @@ module Line =
     let payLines<'a> (lines: int[][]) (snapshot : 'a[][]) = 
         lines |> Array.map (onePayLine snapshot)
     
-    let countLineOnce<'a when 'a: equality> (isWild: 'a -> bool) (lineOfSymbol: IEnumerable<'a>) : option<LineResult<'a>>=
+    let countLineOnce<'a when 'a: equality> (isWild: 'a -> bool) (lineOfSymbol: seq<'a>) : option<LineResult<'a>>=
         let iter = lineOfSymbol.GetEnumerator()
 
         if iter.MoveNext() then
@@ -99,12 +99,12 @@ module Line =
         (leftResult, rightResult)
         
     let countAllLineTwice<'a when 'a: equality>(isWild: 'a->bool)(linesOfSymbol: 'a[][]) =
-       linesOfSymbol |> Array.mapi (fun i line -> (i, countLineTwice isWild line))
+       linesOfSymbol |> Array.map (countLineTwice isWild)
     
     let countSymbol<'a> (test:'a->bool) =
         Seq.sumBy (fun x -> if test x then 1 else 0)
         
-    let scanScatter<'a> (ss: IEnumerable<Reel<'a>>) (countScatter: seq<'a> -> int) (countWild: seq<'a> -> int) =
+    let scanScatter<'a> (ss: seq<Reel<'a>>) (countScatter: seq<'a> -> int) (countWild: seq<'a> -> int) =
         let iter = ss.GetEnumerator()
         if iter.MoveNext() then 
             let first = countScatter iter.Current
