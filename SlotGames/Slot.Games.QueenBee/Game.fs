@@ -5,8 +5,7 @@ open Microsoft.FSharp.Core
 open FSharpPlus
 open Common
 module Level =
-    let width = 5
-    let height = 3
+    let width,height = 5,3
     let l1 = [
         [|1;4;10;2;4;7;0;1;8;3;5;7;2;3;4;8;2;3;7;8;3;1;6;0;2;9;3;2;7;6;2;5;3;4;7;3;4;5;2;6;3;3;3|];
         [|2;4;10;0;3;5;2;0;7;2;4;11;1;4;9;3;4;5;1;4;0;1;3;5;2;6;4;2;8;3;2;7;4;2;5;1;2;4;2;0;0;3|];
@@ -35,53 +34,34 @@ module Level =
     Common.Level.checkLevel l2 width height
     Common.Level.checkLevel l3 width height
     
-    let queenBeeSpin = Common.Level.randomSpin height
-    let queenBeeSpinLevel1  = queenBeeSpin l1
-    let queenBeeSpinLevel2  = queenBeeSpin l2
-    let queenBeeSpinLevel3  = queenBeeSpin l3
-module PayTable =
-    let Ten = 0
-    let Jack = 1
-    let Queen = 2
-    let King = 3
-    let Ace = 4
-    let Daisy = 5
-    let Flower =6
-    let BeeHives = 7
-    let SkinnyBee = 8
-    let FatBee = 9
-    let Scatter = 10
-    let Wild = 11
+    let private queenBeeSpin = Common.Level.randomSpin height
+    let spinLevel1,spinLevel2,spinLevel3  = queenBeeSpin l1,queenBeeSpin l2,queenBeeSpin l3
     
-    let fatBee    = Map [(5,5000);(4,500);(3,100);(2,10);(1,2)]
-    let skinnyBee = Map [(5,2500);(4,250);(3,50);(2,5)]
-    let beeHives =  Map [(5,1000);(4,100);(3,20);(2,3)]
-    let flower   =  Map [(5,1000);(4,100);(3,20);(2,3)]
-    let daisy = Map [(5,500);(4,30);(3,10)]
-    let ace   = Map [(5,300);(4,25);(3,5)]
-    let king  = Map [(5,200);(4,20);(3,5)]
-    let queen = Map [(5,200);(4,20);(3,5)]
-    let jack  = Map [(5,100);(4,15);(3,5)]
-    let ten   = Map [(5,100);(4,15);(3,5)]
+module PayTable =
+    let Ten,Jack,Queen,King,Ace = 0,1,2,3,4
+    let Daisy,Flower,BeeHives,SkinnyBee,FatBee= 5,6,7,8,9
+    let Scatter,Wild = 10,11
+    
+    let plainPayTable = Map[
+        FatBee,Map [(5,5000);(4,500);(3,100);(2,10);(1,2)];
+        SkinnyBee, Map [(5,2500);(4,250);(3,50);(2,5)];
+        BeeHives, Map [(5,1000);(4,100);(3,20);(2,3)];
+        Flower, Map [(5,1000);(4,100);(3,20);(2,3)];
+        Daisy, Map [(5,500);(4,30);(3,10)];
+        Ace, Map [(5,300);(4,25);(3,5)];
+        King, Map [(5,200);(4,20);(3,5)];
+        Queen, Map [(5,200);(4,20);(3,5)];
+        Jack, Map [(5,100);(4,15);(3,5)];
+        Ten, Map [(5,100);(4,15);(3,5)]
+    ]
+   
     let scatter = Map [(5,100);(4,10);(3,5);(2,1)]
 
-    let plainPayTable = Map[
-        FatBee,fatBee;
-        SkinnyBee, skinnyBee;
-        BeeHives, beeHives;
-        Flower, flower;
-        Daisy, daisy;
-        Ace, ace;
-        King, king;
-        Queen, queen;
-        Jack, jack;
-        Ten, ten
-    ]
-    let doubleUp subst value= if subst then value*2 else value
+    let multiply subst times value = if subst then value*times else value
     let calScatterWin (s,r)  =
-         PayTable.simpleLookup scatter s |> Option.map (doubleUp r)
+         PayTable.simpleLookup scatter s |> Option.map (multiply r 2)
     let calPlainWin (s,c,r)  =
-        PayTable.nestedLookup plainPayTable s c |> Option.map (doubleUp r)
+        PayTable.nestedLookup plainPayTable s c |> Option.map (multiply r 2)
     let queenBeeIsWild e = e = Wild
     let queenBeeIsScatter e = e = Scatter
 
@@ -100,7 +80,8 @@ module Line =
     let totalLines = allLines.Length
     let queenBeePayLines  = Line.payLines allLines
     let queenBeeCountAllLineTwice = Line.countAllLineTwice PayTable.queenBeeIsWild
-    let queenBeeCountScatter snapshot = Line.countScatter snapshot PayTable.queenBeeIsScatter PayTable.queenBeeIsWild
+    let queenBeeCountScatter snapshot =
+        Line.countScatter snapshot PayTable.queenBeeIsScatter PayTable.queenBeeIsWild
 
 module Core =
    
@@ -136,27 +117,25 @@ module Core =
         {
             result = countAllLines
             win = plainWin
-            multiplier = Seq.fold (fun s e -> s+ sumL2R e) 0 plainWin
+            multiplier = Seq.fold (fun s e -> s + sumL2R e) 0 plainWin
         }
         
-    let scatterResult (snapshot:int[][])(totalLines:int):ScatterResult =
+    let scatterResult (snapshot:int[][]):ScatterResult =
         let countScatter = Line.queenBeeCountScatter snapshot
         let (l,r) = countScatter
         let scatterWin = l>>= PayTable.calScatterWin,r>>= PayTable.calScatterWin
-        let multiplier = totalLines * sumL2R scatterWin
         {
             result = countScatter
             win = scatterWin
-            multiplier = multiplier
+            multiplier = sumL2R scatterWin
         }
        
-    
-    let spinLevel1 (random :int -> int) =
-        let ss = Level.queenBeeSpinLevel1(random)
+    let randomSpinLevel1 (random :int -> int) =
+        let ss = Level.spinLevel1(random)
         let linesOfSymbol = Line.queenBeePayLines ss
         {
             snapshot = ss
             linesOfSymbol = linesOfSymbol
-            scatter= scatterResult ss Line.totalLines
+            scatter= scatterResult ss
             plain = plainResult linesOfSymbol
         }
