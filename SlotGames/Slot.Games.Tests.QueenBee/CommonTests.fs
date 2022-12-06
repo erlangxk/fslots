@@ -187,7 +187,7 @@ let countLineTwice () =
     Assert.AreEqual((Some(4,3,true),Some(4,1,false)), r4)
     
     let r4 = cf [|4;3;3;3;4|]
-    Assert.AreEqual((Some(4,5,true),Some(4,5,true)), r4)
+    Assert.AreEqual((Some(4,5,true),None), r4)
     
     let r5 = cf [|4;5;3;3;4|]
     Assert.AreEqual((Some(4,1,false),Some(4,3,true)), r5)

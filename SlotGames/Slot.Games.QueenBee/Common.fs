@@ -92,11 +92,15 @@ module Line =
     let countLineTwice<'a when 'a: equality> (isWild: 'a -> bool) (lineOfSymbol: 'a []) =
         let l2r = lineOfSymbol.AsEnumerable()
         let leftResult = countLineOnce isWild l2r
+        let len = lineOfSymbol.Length
+        match  leftResult with     
+          | Some(_,c,_) when c=len ->
+                (leftResult, None)
+          | _ ->
+                let r2l = lineOfSymbol.Reverse()
+                let rightResult = countLineOnce isWild r2l
+                (leftResult, rightResult)
         
-        let r2l = lineOfSymbol.Reverse()
-        let rightResult = countLineOnce isWild r2l
-
-        (leftResult, rightResult)
         
     let countAllLineTwice<'a when 'a: equality>(isWild: 'a->bool)(linesOfSymbol: 'a[][]) =
        linesOfSymbol |> Array.map (countLineTwice isWild)
