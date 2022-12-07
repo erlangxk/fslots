@@ -38,13 +38,6 @@ let testCalPlainWin () =
     Assert.AreEqual(15, r.multiplier)
   
     
-[<Test>]
-let testGenStartIdx1 () =
-    let maxIdx = [3;3]
-    let r = Common.Rtp.genStartIdx maxIdx
-    let er = [[0; 0]; [0; 1]; [0; 2]; [1; 0]; [1; 1]; [1; 2]; [2; 0]; [2; 1]; [2; 2]]
-    Assert.AreEqual(er,r)
-    Assert.AreEqual(9, Seq.toList(r).Length)  
    
 [<Test>]
 let testGenStartIdx2 () =
@@ -53,14 +46,35 @@ let testGenStartIdx2 () =
     let m = Common.Rtp.genStartIdx ms |> Seq.take 35 |> Seq.last
     let er  = [0;0;0;1;0]
     Assert.AreEqual(er, m)
+    
+    
+//[<Test>]
+let testFullCombo() =
+    let gameLevel = Game.Level.l3
+    let ms = [ for l in gameLevel -> l.Length ]
+    let startIdx = Common.Rtp.genStartIdx ms
+    let lines =9
+    let mutable totalWin:double = 0.0
+    let mutable totalBet:double = 1.0
+    for idx in startIdx do
+        let slices = Common.Rtp.genSlice idx ms 3
+        let r =  Common.Level.shoot gameLevel slices
+        let result = Game.Core.snapshotResult r
+        let m = result.plain.multiplier + result.scatter.multiplier * lines
+        totalWin <- (double)m + totalWin
+        totalBet <- (double)lines + totalBet
+     
+    printf $"full combo's RTP = {totalWin/totalBet}"     
+      
                   
 let random = System.Random()
 
-[<Ignore("rtp")>]
+//[<Ignore("rtp")>]
+[<Test>]
 let randomSpinLevel1() =
     let rng i =  random.Next(0,i)
     let lines =9
-    let times = 10000000
+    let times = 10000
     let mutable total:double = 0.0
     for i in 1..times do
         let r = Game.Core.randomSpinLevel1 rng

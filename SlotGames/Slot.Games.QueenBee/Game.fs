@@ -13,7 +13,8 @@ module Level =
         [|3;5;10;4;8;2;4;9;2;1;11;2;8;6;0;3;6;5;2;6;4;1;7;2;5;3;1;7;2;6;4;1;8;3;6;0;1|];
         [|2;0;10;3;6;7;0;3;4;1;5;0;4;7;2;5;4;9;7;2;4;5;0;1;7;2;4;7;2;0;8;1;5;6|]
     ]
-
+    
+    //full combo's RTP = 0.9339259632022288
     let l2 = [
           [|1;4;10;2;4;7;0;1;8;3;5;7;2;3;4;8;2;3;7;8;3;1;6;0;2;9;3;2;7;6;2;5;3;4;7;3;4;5;2;6;3;3;3|];
           [|2;4;10;0;3;5;2;0;7;2;4;11;1;4;9;3;4;5;1;4;0;1;3;5;2;6;4;2;8;3;2;7;4;2;5;1;2;4;2;0;0;3;0;0;0|];
@@ -22,6 +23,7 @@ module Level =
           [|2;0;10;3;6;7;0;3;4;1;5;0;4;7;2;5;4;9;7;2;4;5;0;1;7;2;4;7;2;0;8;1;5;6|] 
     ]
 
+    //full combo's RTP = 0.9057785266780308
     let l3 = [
           [|1;4;10;2;4;7;0;1;8;3;5;7;2;3;4;8;2;3;7;8;3;1;6;0;2;9;3;2;7;6;2;5;3;4;7;3;4;5;2;6;3;3;3|];
           [|2;4;10;0;3;5;2;0;7;2;4;11;1;4;9;3;4;5;1;4;0;1;3;5;2;6;4;2;8;3;2;7;4;2;5;1;2;4;2;0;0;3;0;0;0;0;0;0;0|];
@@ -30,11 +32,11 @@ module Level =
           [|2;0;10;3;6;7;0;3;4;1;5;0;4;7;2;5;4;9;7;2;4;5;0;1;7;2;4;7;2;0;8;1;5;6|]
     ]
     
-    Common.Level.checkLevel l1 width height
-    Common.Level.checkLevel l2 width height
-    Common.Level.checkLevel l3 width height
+    Level.checkLevel l1 width height
+    Level.checkLevel l2 width height
+    Level.checkLevel l3 width height
     
-    let private queenBeeSpin = Common.Level.randomSpin height
+    let private queenBeeSpin = Level.randomSpin height
     let spinLevel1,spinLevel2,spinLevel3  = queenBeeSpin l1,queenBeeSpin l2,queenBeeSpin l3
     
 module PayTable =
@@ -66,20 +68,20 @@ module PayTable =
     let queenBeeIsScatter e = e = Scatter
 
 module Line =
-    let l1 = [|1; 1; 1; 1; 1|]
-    let l2 = [|0; 0; 0; 0; 0|]
-    let l3 = [|2; 2; 2; 2; 2|]  
-    let l4 = [|0; 1; 2; 1; 0|]
-    let l5 = [|2; 1; 0; 1; 2|]
-    let l6 = [|0; 0; 1; 0; 0|]
-    let l7 = [|2; 2; 1; 2; 2|]
-    let l8 = [|1; 2; 2; 2; 1|]
-    let l9 = [|1; 0; 0; 0; 1|]
+    let l1 = Seq.ofList [1; 1; 1; 1; 1]
+    let l2 = Seq.ofList [0; 0; 0; 0; 0]
+    let l3 = Seq.ofList [2; 2; 2; 2; 2]                     
+    let l4 = Seq.ofList [0; 1; 2; 1; 0]
+    let l5 = Seq.ofList [2; 1; 0; 1; 2]
+    let l6 = Seq.ofList [0; 0; 1; 0; 0]
+    let l7 = Seq.ofList [2; 2; 1; 2; 2]
+    let l8 = Seq.ofList [1; 2; 2; 2; 1]
+    let l9 = Seq.ofList [1; 0; 0; 0; 1]
     
-    let  allLines = [|l1; l2; l3; l4; l5; l6; l7; l8; l9|]
-    let totalLines = allLines.Length
+    let  allLines = Seq.ofList [l1; l2; l3; l4; l5; l6; l7; l8; l9]
+    let totalLines = 9
     let queenBeePayLines  = Line.payLines allLines
-    let queenBeeCountAllLineTwice = Line.countAllLineTwice PayTable.queenBeeIsWild
+    let queenBeeCountAllLineTwice = Line.countAllLineTwice Level.width PayTable.queenBeeIsWild
     let queenBeeCountScatter snapshot =
         Line.countScatter snapshot PayTable.queenBeeIsScatter PayTable.queenBeeIsWild
 
@@ -101,7 +103,7 @@ module Core =
     
     type Result<'a> = {
         snapshot: 'a[][]
-        linesOfSymbol: 'a[][]
+        linesOfSymbol: seq<seq<'a>>
         scatter:ScatterResult
         plain:PlainResult<'a>
     }
@@ -110,8 +112,8 @@ module Core =
         let f= Option.fold (fun s e-> s+ e) 0
         f l + f r
     
-    let plainResult (linesOfSymbol:int[][]):PlainResult<int> = 
-        let countAllLines = Line.queenBeeCountAllLineTwice linesOfSymbol |> Seq.ofArray
+    let plainResult (linesOfSymbol:seq<seq<int>>):PlainResult<int> = 
+        let countAllLines = Line.queenBeeCountAllLineTwice linesOfSymbol
         let plainWin = seq { for l,r in countAllLines ->
                                 l >>= PayTable.calPlainWin,r >>= PayTable.calPlainWin }       
         {
@@ -122,20 +124,21 @@ module Core =
         
     let scatterResult (snapshot:int[][]):ScatterResult =
         let countScatter = Line.queenBeeCountScatter snapshot
-        let (l,r) = countScatter
+        let l,r = countScatter
         let scatterWin = l>>= PayTable.calScatterWin,r>>= PayTable.calScatterWin
         {
             result = countScatter
             win = scatterWin
             multiplier = sumL2R scatterWin
         }
-       
-    let randomSpinLevel1 (random :int -> int) =
-        let ss = Level.spinLevel1(random)
-        let linesOfSymbol = Line.queenBeePayLines ss
+      
+    let snapshotResult(snapshot:int[][]) =
+        let linesOfSymbol = Line.queenBeePayLines snapshot
         {
-            snapshot = ss
+            snapshot = snapshot
             linesOfSymbol = linesOfSymbol
-            scatter= scatterResult ss
+            scatter= scatterResult snapshot
             plain = plainResult linesOfSymbol
         }
+    let randomSpinLevel1 (random :int -> int) =
+        Level.spinLevel1 random |> snapshotResult

@@ -57,10 +57,10 @@ module Level =
 type LineResult<'a> = option<'a * int * bool>
 module Line =
     let onePayLine<'a>(snapshot: 'a[][]) =
-        Array.mapi( fun i j -> snapshot.[i].[j])
+        Seq.mapi( fun i j -> snapshot.[i].[j])
     
-    let payLines<'a> (lines: int[][]) (snapshot : 'a[][]) = 
-        lines |> Array.map (onePayLine snapshot)
+    let payLines<'a> (lines: seq<seq<int>>) (snapshot : 'a[][]) = 
+        lines |> Seq.map (onePayLine snapshot)
     
     let countLineOnce<'a when 'a: equality> (isWild: 'a -> bool) (lineOfSymbol: seq<'a>) : LineResult<'a>=
         let iter = lineOfSymbol.GetEnumerator()
@@ -87,12 +87,11 @@ module Line =
         else
             None
 
-    let countLineTwice<'a when 'a: equality> (isWild: 'a -> bool) (lineOfSymbol: 'a []) =
+    let countLineTwice<'a when 'a: equality> (width:int)(isWild: 'a -> bool)(lineOfSymbol: seq<'a>) =
         let l2r = lineOfSymbol.AsEnumerable()
         let leftResult = countLineOnce isWild l2r
-        let len = lineOfSymbol.Length
         match  leftResult with     
-          | Some(_,c,_) when c=len ->
+          | Some(_,c,_) when c=width ->
                 (leftResult, None)
           | _ ->
                 let r2l = lineOfSymbol.Reverse()
@@ -100,8 +99,8 @@ module Line =
                 (leftResult, rightResult)
         
         
-    let countAllLineTwice<'a when 'a: equality>(isWild: 'a->bool)(linesOfSymbol: 'a[][]) =
-       linesOfSymbol |> Array.map (countLineTwice isWild)
+    let countAllLineTwice<'a when 'a: equality>(width:int)(isWild: 'a->bool)(linesOfSymbol: seq<seq<'a>>) =
+       linesOfSymbol |> Seq.map (countLineTwice width isWild)
     
     let countSymbol<'a> (test:'a->bool) =
         Seq.sumBy (fun x -> if test x then 1 else 0)
@@ -145,7 +144,6 @@ module Rtp =
         | h::t ->  
             seq { for i in 0..h-1 do
                     for l in (genStartIdx t) do yield i::l }
-            
-    
-    let genSlice(starts:list<int>)(len: int)(size:int) =
-        seq{ for s in starts -> Level.safeRings len s size}
+              
+    let genSlice(starts:list<int>)(lens: list<int>)(size:int) =
+        List.map2 (fun s l-> Level.safeRings l s size) starts lens
