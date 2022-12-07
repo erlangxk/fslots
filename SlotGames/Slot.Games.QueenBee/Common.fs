@@ -46,16 +46,14 @@ module Level =
     let randomIdx (lens: seq<int>)(height: int)(random: int -> int) =
         [ for len in lens -> safeRings len (random len) height ]
 
+    let shoot(reels: Reel<'a> list)(reelIndex: seq<seq<int>>) =
+        let oneReel reel is =  (safePick reel is) |> Seq.toArray
+        Seq.map2 oneReel reels reelIndex |> Seq.toArray
+    
     let randomSpin<'a> (height: int)(reels: Reel<'a> list)(random: int -> int) =
-        let lens =
-            seq { for l in reels -> Array.length l }
-
-        let idx = randomIdx lens height random
-
-        Seq.map2 (fun reel is -> (safePick reel is) |> Seq.toArray) reels idx
-        |> Seq.toArray
- 
-
+        let lens = seq { for l in reels -> Array.length l }
+        randomIdx lens height random |> shoot reels
+        
 type LineResult<'a> = option<'a * int * bool>
 module Line =
     let onePayLine<'a>(snapshot: 'a[][]) =
@@ -139,3 +137,15 @@ module Line =
             let er2l = snapshot.Reverse()
             let rr = scanScatter er2l cs cw
             rl,rr
+            
+module Rtp =
+    let rec genStartIdx (maxIdx:list<int>) =    
+        match maxIdx with 
+        | [] -> Seq.ofList([[]])
+        | h::t ->  
+            seq { for i in 0..h-1 do
+                    for l in (genStartIdx t) do yield i::l }
+            
+    
+    let genSlice(starts:list<int>)(len: int)(size:int) =
+        seq{ for s in starts -> Level.safeRings len s size}

@@ -4,6 +4,7 @@ module Slot.Games.Tests.QueenBee.GameTests
 open NUnit.Framework
 open Slot.Games.QueenBee
 open System.Linq
+open FSharpPlus
 
 [<Test>]
 let testSpin1 () =
@@ -35,7 +36,24 @@ let testCalPlainWin () =
     let linesOfSymbol = Game.Line.queenBeePayLines ss
     let r = Game.Core.plainResult linesOfSymbol
     Assert.AreEqual(15, r.multiplier)
+  
+    
+[<Test>]
+let testGenStartIdx1 () =
+    let maxIdx = [3;3]
+    let r = Common.Rtp.genStartIdx maxIdx
+    let er = [[0; 0]; [0; 1]; [0; 2]; [1; 0]; [1; 1]; [1; 2]; [2; 0]; [2; 1]; [2; 2]]
+    Assert.AreEqual(er,r)
+    Assert.AreEqual(9, Seq.toList(r).Length)  
    
+[<Test>]
+let testGenStartIdx2 () =
+    let ms = [ for l in Game.Level.l1 -> l.Length ]
+    Assert.AreEqual([43; 42; 40; 37; 34],ms)
+    let m = Common.Rtp.genStartIdx ms |> Seq.take 35 |> Seq.last
+    let er  = [0;0;0;1;0]
+    Assert.AreEqual(er, m)
+                  
 let random = System.Random()
 
 [<Ignore("rtp")>]
