@@ -1,20 +1,14 @@
 module Slot.Games.QueenBee.Common
 
 open FSharpPlus
-open System.Collections.Generic
 open System.Linq
 
 type Reel<'a> = 'a[]
 
 module PayTable =
-    let inline simpleLookup table count = Map.tryFind count table
-
-    let nestedLookup table symbol count =
-        monad {
-            let! t = Map.tryFind symbol table
-            return! simpleLookup t count
-        }
-
+    let simpleLookup = Map.tryFind
+    let nestedLookup symbol count = simpleLookup symbol >=> simpleLookup count
+        
 module Level =
     let checkLevel<'a> (level: Reel<'a> list) (width: int) (height: int) =
         let rsl = List.length level
@@ -28,7 +22,7 @@ module Level =
                 if rl < height then
                     invalidArg (nameof (level)) $"reel of level should NOT less than {height}, but got {rl}"
 
-    let safePick<'a> (reel:Reel<'a>)(idx: seq<int>) = Seq.map (Array.get reel) idx
+    let safePick<'a> (reel:Reel<'a>)(idx: seq<int>) = idx |>> Array.get reel 
 
     let safeRings (len: int) (start: int) (size: int) =
         seq { for i in start .. size + start - 1 -> i % len }
@@ -60,7 +54,7 @@ module Line =
         Seq.mapi( fun i j -> snapshot.[i].[j])
     
     let payLines<'a> (lines: seq<seq<int>>) (snapshot : 'a[][]) = 
-        lines |> Seq.map (onePayLine snapshot)
+        lines |>> onePayLine snapshot
     
     let countLineOnce<'a when 'a: equality> (isWild: 'a -> bool) (lineOfSymbol: seq<'a>) : LineResult<'a>=
         let iter = lineOfSymbol.GetEnumerator()
@@ -88,8 +82,7 @@ module Line =
             None
 
     let countLineTwice<'a when 'a: equality> (width:int)(isWild: 'a -> bool)(lineOfSymbol: seq<'a>) =
-        let l2r = lineOfSymbol.AsEnumerable()
-        let leftResult = countLineOnce isWild l2r
+        let leftResult = countLineOnce isWild lineOfSymbol
         match  leftResult with     
           | Some(_,c,_) when c=width ->
                 (leftResult, None)
@@ -98,9 +91,8 @@ module Line =
                 let rightResult = countLineOnce isWild r2l
                 (leftResult, rightResult)
         
-        
     let countAllLineTwice<'a when 'a: equality>(width:int)(isWild: 'a->bool)(linesOfSymbol: seq<seq<'a>>) =
-       linesOfSymbol |> Seq.map (countLineTwice width isWild)
+       linesOfSymbol |>> countLineTwice width isWild
     
     let countSymbol<'a> (test:'a->bool) =
         Seq.sumBy (fun x -> if test x then 1 else 0)
@@ -131,15 +123,14 @@ module Line =
     let countScatter<'a> (snapshot: 'a[][]) (isScatter:'a->bool) (isWild: 'a->bool) =
             let cs = countSymbol isScatter
             let cw = countSymbol isWild
-            let el2r = snapshot.AsEnumerable()
-            let rl = scanScatter el2r cs cw
+            let rl = scanScatter snapshot cs cw
             let er2l = snapshot.Reverse()
             let rr = scanScatter er2l cs cw
             rl,rr
             
 module Rtp =
-    let rec genStartIdx (maxIdx:list<int>) =    
-        match maxIdx with 
+    let rec genStartIdx (lens:list<int>) =    
+        match lens with 
         | [] -> Seq.ofList([[]])
         | h::t ->  
             seq { for i in 0..h-1 do

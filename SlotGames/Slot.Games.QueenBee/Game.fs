@@ -6,6 +6,7 @@ open FSharpPlus
 open Common
 module Level =
     let width,height = 5,3
+    //full combo's RTP = 0.9585549701566001
     let l1 = [
         [|1;4;10;2;4;7;0;1;8;3;5;7;2;3;4;8;2;3;7;8;3;1;6;0;2;9;3;2;7;6;2;5;3;4;7;3;4;5;2;6;3;3;3|];
         [|2;4;10;0;3;5;2;0;7;2;4;11;1;4;9;3;4;5;1;4;0;1;3;5;2;6;4;2;8;3;2;7;4;2;5;1;2;4;2;0;0;3|];
@@ -61,9 +62,9 @@ module PayTable =
 
     let multiply subst times value = if subst then value*times else value
     let calScatterWin (s,r)  =
-         PayTable.simpleLookup scatter s |> Option.map (multiply r 2)
+        PayTable.simpleLookup s scatter |>> multiply r 2
     let calPlainWin (s,c,r)  =
-        PayTable.nestedLookup plainPayTable s c |> Option.map (multiply r 2)
+        PayTable.nestedLookup s c plainPayTable|>> multiply r 2
     let queenBeeIsWild e = e = Wild
     let queenBeeIsScatter e = e = Scatter
 
@@ -125,14 +126,14 @@ module Core =
     let scatterResult (snapshot:int[][]):ScatterResult =
         let countScatter = Line.queenBeeCountScatter snapshot
         let l,r = countScatter
-        let scatterWin = l>>= PayTable.calScatterWin,r>>= PayTable.calScatterWin
+        let scatterWin = l >>= PayTable.calScatterWin,r >>= PayTable.calScatterWin
         {
             result = countScatter
             win = scatterWin
             multiplier = sumL2R scatterWin
         }
       
-    let snapshotResult(snapshot:int[][]) =
+    let computeResult(snapshot:int[][]) =
         let linesOfSymbol = Line.queenBeePayLines snapshot
         {
             snapshot = snapshot
@@ -141,4 +142,4 @@ module Core =
             plain = plainResult linesOfSymbol
         }
     let randomSpinLevel1 (random :int -> int) =
-        Level.spinLevel1 random |> snapshotResult
+        Level.spinLevel1 random |> computeResult

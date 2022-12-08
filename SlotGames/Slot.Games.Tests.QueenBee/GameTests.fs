@@ -48,18 +48,18 @@ let testGenStartIdx2 () =
     Assert.AreEqual(er, m)
     
     
-//[<Test>]
+[<Test>]
 let testFullCombo() =
-    let gameLevel = Game.Level.l3
-    let ms = [ for l in gameLevel -> l.Length ]
-    let startIdx = Common.Rtp.genStartIdx ms
+    let gameLevel = Game.Level.l1
+    let lens = [ for l in gameLevel -> l.Length ]
+    let startIdx = Common.Rtp.genStartIdx lens
     let lines =9
     let mutable totalWin:double = 0.0
     let mutable totalBet:double = 1.0
     for idx in startIdx do
-        let slices = Common.Rtp.genSlice idx ms 3
+        let slices = Common.Rtp.genSlice idx lens Game.Level.height
         let r =  Common.Level.shoot gameLevel slices
-        let result = Game.Core.snapshotResult r
+        let result = Game.Core.computeResult r
         let m = result.plain.multiplier + result.scatter.multiplier * lines
         totalWin <- (double)m + totalWin
         totalBet <- (double)lines + totalBet

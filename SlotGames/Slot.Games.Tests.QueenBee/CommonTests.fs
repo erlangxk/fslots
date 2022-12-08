@@ -17,8 +17,8 @@ let pt2 = Map[(9, pt1)]
 
 [<Test>]
 let payTableTest1 () =
-    let lookup =
-        Common.PayTable.simpleLookup pt1
+    let lookup s =
+        Common.PayTable.simpleLookup s pt1
 
     let r1 = lookup 5
     Assert.AreEqual(Some(100), r1)
@@ -27,8 +27,8 @@ let payTableTest1 () =
 
 [<Test>]
 let payTableTest2 () =
-    let lookup =
-        Common.PayTable.nestedLookup pt2
+    let lookup s c =
+        Common.PayTable.nestedLookup s c pt2
 
     let r1 = lookup 9 5
     Assert.AreEqual(Some(100), r1)
