@@ -26,16 +26,6 @@ module Level =
 
     let safeRings (len: int) (start: int) (size: int) =
         seq { for i in start .. size + start - 1 -> i % len }
-
-    let fakeRandomSeq (numbers:seq<int>) =
-         let state = numbers.GetEnumerator()
-         let rec f (i:int) =
-             if state.MoveNext() then
-                 state.Current
-             else
-                 state.Reset()
-                 f i
-         f
     
     let randomIdx (lens: seq<int>)(height: int)(random: int -> int) =
         [ for len in lens -> safeRings len (random len) height ]
@@ -128,7 +118,16 @@ module Line =
             let rr = scanScatter er2l cs cw
             rl,rr
             
-module Rtp =
+module Test =
+    let fakeRandomSeq (numbers:seq<int>) =
+         let state = numbers.GetEnumerator()
+         let rec f (i:int) =
+             if state.MoveNext() then
+                 state.Current
+             else
+                 state.Reset()
+                 f i
+         f
     let rec genStartIdx (lens:list<int>) =    
         match lens with 
         | [] -> Seq.ofList([[]])
