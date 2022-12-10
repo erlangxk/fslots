@@ -51,24 +51,24 @@ let safePick1 () =
     let reel = [|1;2;3;4;5;6;7;8|]
     
     let r1 = Common.Level.safePick reel [3;5;7]
-    Assert.Equal([4;6;8],r1)
+    Assert.Equal<list<int>>([4;6;8],r1)
    
     let r2 = Common.Level.safePick reel [0;1;2]
-    Assert.Equal([1;2;3],r2)   
+    Assert.Equal<list<int>>([1;2;3],r2)   
 
 [<Fact>]
 let safeRings1 () =
     let r = Common.Level.safeRings 5 4 3
-    Assert.Equal([4;0;1],r)
+    Assert.Equal<list<int>>([4;0;1],r)
     
     let r2 = Common.Level.safeRings 5 4 2
-    Assert.Equal([4;0],r2)
+    Assert.Equal<list<int>>([4;0],r2)
     
     let r3 = Common.Level.safeRings 5 4 4
-    Assert.Equal([4;0;1;2],r3)
+    Assert.Equal<list<int>>([4;0;1;2],r3)
     
     let r4 = Common.Level.safeRings 5 3 5
-    Assert.Equal([3;4;0;1;2],r4)
+    Assert.Equal<list<int>>([3;4;0;1;2],r4)
     
 
 [<Fact>]
@@ -86,11 +86,11 @@ let randomIdx1 () =
     let random = Common.Test.fakeRandomSeq [3;7;5]
     let r = Common.Level.randomIdx [10;8;7] 3 random
     let e = [
-        [3;4;5] |>Seq.ofList
-        [7;0;1] |>Seq.ofList
-        [5;6;0] |>Seq.ofList
+        [3;4;5]
+        [7;0;1]
+        [5;6;0]
     ]
-    Assert.Equal<seq<seq<int>>>(e, r)
+    Assert.Equal<list<list<int>>>(e, r)
     
 [<Fact>]
 let randomSpin () =
@@ -122,22 +122,22 @@ let pl9 = [4;3;9;4;4]
 [<Fact>]
 let payLine () =
     let pl = Common.Line.onePayLine ss
-    Assert.Equal(pl1, pl Game.Line.l1)
-    Assert.Equal(pl2, pl Game.Line.l2)
-    Assert.Equal(pl3, pl Game.Line.l3)
-    Assert.Equal(pl4, pl Game.Line.l4)
-    Assert.Equal(pl5, pl Game.Line.l5)
-    Assert.Equal(pl6, pl Game.Line.l6)
-    Assert.Equal(pl7, pl Game.Line.l7)
-    Assert.Equal(pl8, pl Game.Line.l8)
-    Assert.Equal(pl9, pl Game.Line.l9)
+    Assert.Equal<list<int>>(pl1, pl Game.Line.l1)
+    Assert.Equal<list<int>>(pl2, pl Game.Line.l2)
+    Assert.Equal<list<int>>(pl3, pl Game.Line.l3)
+    Assert.Equal<list<int>>(pl4, pl Game.Line.l4)
+    Assert.Equal<list<int>>(pl5, pl Game.Line.l5)
+    Assert.Equal<list<int>>(pl6, pl Game.Line.l6)
+    Assert.Equal<list<int>>(pl7, pl Game.Line.l7)
+    Assert.Equal<list<int>>(pl8, pl Game.Line.l8)
+    Assert.Equal<list<int>>(pl9, pl Game.Line.l9)
     
    
 [<Fact>]
 let payLines () =
         let r = Common.Line.payLines Game.Line.allLines ss
-        let er = [pl1;pl2;pl3;pl4;pl5;pl6;pl7;pl8;pl9] |> Seq.ofList |>> Seq.ofList
-        Assert.Equal<seq<seq<int>>>(er,r)
+        let er = [pl1;pl2;pl3;pl4;pl5;pl6;pl7;pl8;pl9]
+        Assert.Equal<list<list<int>>>(er,r)
 
 let equal i =  fun j-> i=j 
 
@@ -146,22 +146,22 @@ let equal i =  fun j-> i=j
 let countLineOnce () =
     let cf = Common.Line.countLineOnce (equal 3)
     
-    let r1 = cf [|2;3;4|]
+    let r1 = cf [2;3;4]
     Assert.Equal(Some(2,2,true),r1)
     
-    let r2 = cf [||]
+    let r2 = cf []
     Assert.Equal(None,r2)
     
-    let r3 = cf [|3;3;3|]
+    let r3 = cf [3;3;3]
     Assert.Equal(None,r3)
     
-    let r4 = cf [|4;3;4;5;4|]
+    let r4 = cf [4;3;4;5;4]
     Assert.Equal(Some(4,3,true), r4)
     
-    let r4 = cf [|4;3;3;3;4|]
+    let r4 = cf [4;3;3;3;4]
     Assert.Equal(Some(4,5,true), r4)
     
-    let r5 = cf [|4;5;3;3;4|]
+    let r5 = cf [4;5;3;3;4]
     Assert.Equal(Some(4,1,false), r5)
     
     
@@ -169,31 +169,31 @@ let countLineOnce () =
 let countLineTwice () =
     let cf w = Common.Line.countLineTwice w (equal 3)
     
-    let r1 = cf 3 [|2;3;4|]
+    let r1 = cf 3 [2;3;4]
     Assert.Equal((Some(2,2,true),Some(4,2,true)),r1)
     
-    let r2 = cf 3 [||]
+    let r2 = cf 3 []
     Assert.Equal((None,None),r2)
     
-    let r3 = cf 3 [|3;3;3|]
+    let r3 = cf 3 [3;3;3]
     Assert.Equal((None,None),r3)
     
-    let r4 = cf 5 [|4;3;4;5;4|]
+    let r4 = cf 5 [4;3;4;5;4]
     Assert.Equal((Some(4,3,true),Some(4,1,false)), r4)
     
-    let r4 = cf 5 [|4;3;3;3;4|]
+    let r4 = cf 5 [4;3;3;3;4]
     Assert.Equal((Some(4,5,true),None), r4)
     
-    let r5 = cf 5 [|4;5;3;3;4|]
+    let r5 = cf 5 [4;5;3;3;4]
     Assert.Equal((Some(4,1,false),Some(4,3,true)), r5)
     
     
 [<Fact>]
 let countAllLineTwice () =
     let cf w = Common.Line.countAllLineTwice w (equal 4)
-    let lines = Seq.ofList [
-            Seq.ofList [2;3;9;4;3]
-            Seq.ofList [7;2;0;2;1]
+    let lines = [
+             [2;3;9;4;3]
+             [7;2;0;2;1]
     ]
     let er = [
         Some(2,1,false),Some(3,2,true)
@@ -201,17 +201,17 @@ let countAllLineTwice () =
     ]
     
     let rr = cf 5 lines
-    Assert.Equal(er, rr)
+    Assert.Equal<Common.LeftRightLineResult<int>>(er, rr)
     
     
 [<Fact>]
 let countSymbolTest () =
    let count = Common.Line.countSymbol (equal 2)
-   Assert.Equal(1,  count [2;4;7])
-   Assert.Equal(2,  count [2;2;7])
-   Assert.Equal(3,  count [2;2;2])
-   Assert.Equal(0,  count [0;1;3])
-   Assert.Equal(0,  count [])
+   Assert.Equal(1,  count [|2;4;7|])
+   Assert.Equal(2,  count [|2;2;7|])
+   Assert.Equal(3,  count [|2;2;2|])
+   Assert.Equal(0,  count [|0;1;3|])
+   Assert.Equal(0,  count [||])
 
 [<Fact>]
 let scanTest1 () =
@@ -233,7 +233,7 @@ let scanTest2 () =
 let scanTest3 () =
    let cs = Common.Line.countSymbol (equal 2)
    let cw = Common.Line.countSymbol (equal 5)
-   let r = Common.Line.scanScatter [] cs cw   
+   let r = Common.Line.scanScatter Array.empty cs cw   
    let expected = None
    Assert.Equal(expected, r)
 
@@ -285,10 +285,10 @@ let testGenStartIdx1 () =
 [<Fact>]
 let genSlice () =
     let r = Common.Test.genSlice [3;4;5] [6;5;7] 3
-    let s1 = [3;4;5] |>List.toSeq
-    let s2 = [4;0;1] |>List.toSeq
-    let s3 = [5;6;0] |>List.toSeq
+    let s1 = [3;4;5]
+    let s2 = [4;0;1]
+    let s3 = [5;6;0]
     let er = [s1;s2;s3]
-    Assert.Equal<seq<seq<int>>>(er,r)
+    Assert.Equal<list<list<int>>>(er,r)
     
     

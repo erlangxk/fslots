@@ -67,7 +67,7 @@ let spinOnce lens gameLevel lines idx =
      let result = Game.Core.computeResult r
      result.plain.multiplier + result.scatter.multiplier * lines
     
-//[<Fact>]
+[<Fact>]
 let testMainCycle() =
     let gameLevel = Game.Level.l1
     let lens = [ for l in gameLevel -> l.Length ]
@@ -80,7 +80,7 @@ let testMainCycle() =
                 |> PSeq.sum
     printfn $"totalWin:{totalWin}"
     printfn $"totalCycle:{totalCycle}"
-    printfn $"full combo's RTP = {(double)totalWin/(double)(totalCycle * 9)}"     
+    printfn $"full combo's RTP = {double totalWin / double (totalCycle * 9)}"     
       
                   
 let random = System.Random()
@@ -95,6 +95,6 @@ let randomSpinLevel1() =
     for i in 1..times do
         let r = Game.Core.randomSpinLevel1 rng
         let m = r.plain.multiplier + r.scatter.multiplier * lines
-        total <- total + (double)m
+        total <- total + double m
     let amount =times * lines
-    printfn $"RTP = {total/(double)amount}"  
+    printfn $"RTP = {total / double amount}"  

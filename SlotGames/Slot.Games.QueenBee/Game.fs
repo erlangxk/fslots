@@ -68,17 +68,17 @@ module PayTable =
     let queenBeeIsScatter e = e = Scatter
 
 module Line =
-    let l1 = Seq.ofList [1; 1; 1; 1; 1]
-    let l2 = Seq.ofList [0; 0; 0; 0; 0]
-    let l3 = Seq.ofList [2; 2; 2; 2; 2]                     
-    let l4 = Seq.ofList [0; 1; 2; 1; 0]
-    let l5 = Seq.ofList [2; 1; 0; 1; 2]
-    let l6 = Seq.ofList [0; 0; 1; 0; 0]
-    let l7 = Seq.ofList [2; 2; 1; 2; 2]
-    let l8 = Seq.ofList [1; 2; 2; 2; 1]
-    let l9 = Seq.ofList [1; 0; 0; 0; 1]
+    let l1 = [1; 1; 1; 1; 1]
+    let l2 = [0; 0; 0; 0; 0]
+    let l3 = [2; 2; 2; 2; 2]                     
+    let l4 = [0; 1; 2; 1; 0]
+    let l5 = [2; 1; 0; 1; 2]
+    let l6 = [0; 0; 1; 0; 0]
+    let l7 = [2; 2; 1; 2; 2]
+    let l8 = [1; 2; 2; 2; 1]
+    let l9 = [1; 0; 0; 0; 1]
     
-    let allLines = Seq.ofList [l1; l2; l3; l4; l5; l6; l7; l8; l9]
+    let allLines = [l1; l2; l3; l4; l5; l6; l7; l8; l9]
     let totalLines = 9
     let queenBeePayLines  = Line.payLines allLines
     let queenBeeCountAllLineTwice = Line.countAllLineTwice Level.width PayTable.queenBeeIsWild
@@ -87,7 +87,7 @@ module Line =
 
 module Core =
    
-    type LineResultTwice<'a> = seq<LineResult<'a> * LineResult<'a>>
+    type LineResultTwice<'a> = list<LineResult<'a> * LineResult<'a>>
     
     type ScatterResult = {
         result:(int*bool) option *  (int*bool) option
@@ -97,13 +97,13 @@ module Core =
     
     type PlainResult<'a> = {
         result: LineResultTwice<'a>
-        win: seq<int option * int option>
+        win: list<int option * int option>
         multiplier:int
     }
     
     type Result<'a> = {
         snapshot: 'a[][]
-        linesOfSymbol: seq<seq<'a>>
+        linesOfSymbol: list<list<'a>>
         scatter:ScatterResult
         plain:PlainResult<'a>
     }
@@ -112,10 +112,10 @@ module Core =
         let f= Option.fold (fun s e-> s+ e) 0
         f l + f r
     
-    let plainResult (linesOfSymbol:seq<seq<int>>):PlainResult<int> = 
+    let plainResult (linesOfSymbol:list<list<int>>):PlainResult<int> = 
         let countAllLines = Line.queenBeeCountAllLineTwice linesOfSymbol
-        let plainWin = seq { for l,r in countAllLines ->
-                                l >>= PayTable.calPlainWin,r >>= PayTable.calPlainWin }       
+        let plainWin =  [for l,r in countAllLines ->
+                                l >>= PayTable.calPlainWin,r >>= PayTable.calPlainWin]       
         {
             result = countAllLines
             win = plainWin
