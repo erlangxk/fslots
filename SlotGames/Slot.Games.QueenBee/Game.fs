@@ -58,12 +58,11 @@ module PayTable =
     ]
    
     let scatter = Map [(5,100);(4,10);(3,5);(2,1)]
-
-    let multiply subst times value = if subst then value*times else value
-    let calScatterWin (s,r)  =
-        PayTable.simpleLookup s scatter |>> multiply r 2
-    let calPlainWin (s,c,r)  =
-        PayTable.nestedLookup s c plainPayTable|>> multiply r 2
+    let multiply2 subst value = if subst then value*2 else value
+    let calScatterWin count subst  =
+        scatter |> PayTable.simpleLookup count |>> multiply2 subst 
+    let calPlainWin symbol count subst  =
+        plainPayTable |> PayTable.nestedLookup symbol count |>> multiply2 subst
     let queenBeeIsWild e = e = Wild
     let queenBeeIsScatter e = e = Scatter
 
@@ -86,59 +85,95 @@ module Line =
         Line.countScatter snapshot PayTable.queenBeeIsScatter PayTable.queenBeeIsWild
 
 module Core =
-   
-    type LineResultTwice<'a> = list<LineResult<'a> * LineResult<'a>>
-    
-    type ScatterResult = {
-        result:(int*bool) option *  (int*bool) option
-        win: int option * int option
-        multiplier:int
-    }
-    
-    type PlainResult<'a> = {
-        result: LineResultTwice<'a>
-        win: list<int option * int option>
-        multiplier:int
-    }
-    
-    type Result<'a> = {
-        snapshot: 'a[][]
-        linesOfSymbol: list<list<'a>>
-        scatter:ScatterResult
-        plain:PlainResult<'a>
-    }
-    
-    let sumL2R (l,r) =
-        let f= Option.fold (fun s e-> s+ e) 0
-        f l + f r
-    
-    let plainResult (linesOfSymbol:list<list<int>>):PlainResult<int> = 
-        let countAllLines = Line.queenBeeCountAllLineTwice linesOfSymbol
-        let plainWin =  [for l,r in countAllLines ->
-                                l >>= PayTable.calPlainWin,r >>= PayTable.calPlainWin]       
-        {
-            result = countAllLines
-            win = plainWin
-            multiplier = Seq.fold (fun s e -> s + sumL2R e) 0 plainWin
-        }
+     
+    let L2R = "l2r"
+    let R2L = "r2l"
+
+    type IMul =
+        abstract myMul: int
         
-    let scatterResult (snapshot:int[][]):ScatterResult =
-        let countScatter = Line.queenBeeCountScatter snapshot
-        let l,r = countScatter
-        let scatterWin = l >>= PayTable.calScatterWin,r >>= PayTable.calScatterWin
-        {
-            result = countScatter
-            win = scatterWin
-            multiplier = sumL2R scatterWin
-        }
-      
-    let computeResult(snapshot:int[][]) =
+    type Win<'a> =
+        { dir: string
+          symbol: 'a
+          subst: bool
+          count: int
+          mul: int }
+
+        interface IMul with
+            member self.myMul = self.mul
+
+    let createWin dir s subst c m =
+        { dir = dir
+          symbol = s
+          subst = subst
+          count = c
+          mul = m }
+        
+    type LineWin<'a> =
+        { line: int
+          win: Win<'a> }
+
+        interface IMul with
+            member self.myMul = self.win.mul
+
+    type Result<'a> =
+        { snapshot: 'a[][]
+          scatterWin: list<Win<'a>>
+          scatterMul: int
+          lineWin: list<LineWin<'a>>
+          lineMul: int }
+
+    type Result<'a> with
+
+        member self.totalMul = self.lineMul + self.scatterMul
+
+    let addOneWin<'T when 'T :> IMul> (win: option<'T>) (state: int * list<'T>) =
+        let t, ls = state
+
+        match win with
+        | None -> state
+        | Some(w) -> (t + w.myMul), w :: ls
+
+    let computeLineResult (linesOfSymbol: list<list<int>>) =
+        let countAllLines = Line.queenBeeCountAllLineTwice linesOfSymbol
+
+        let folder (state: int * list<LineWin<int>>) (line: int) ((lr, rr): LeftRightLineResult<int>) =
+            let cal dir result =
+                monad {
+                    let! s, c, subst = result
+                    let! m = PayTable.calPlainWin s c subst
+
+                    return
+                        { line = line
+                          win = createWin dir s subst c m }
+                }
+
+            state |> addOneWin (cal L2R lr) |> addOneWin (cal R2L rr)
+
+        foldi folder (0, []) countAllLines
+
+    let computeScatterResult (snapshot: int[][])(totalLines:int) =
+        let lr, rr = Line.queenBeeCountScatter snapshot
+
+        let cal dir result =
+            monad {
+                let! c, subst = result
+                let! m = PayTable.calScatterWin c subst
+                return createWin dir PayTable.Scatter subst c (m*totalLines)
+            }
+
+        (0, []) |> addOneWin (cal L2R lr) |> addOneWin (cal R2L rr)
+
+    let computeResult (snapshot: int[][]) =
+        let scatterMul, scatterWin = computeScatterResult snapshot Line.totalLines
         let linesOfSymbol = Line.queenBeePayLines snapshot
-        {
-            snapshot = snapshot
-            linesOfSymbol = linesOfSymbol
-            scatter= scatterResult snapshot
-            plain = plainResult linesOfSymbol
-        }
-    let randomSpinLevel1 (random :int -> int) =
+        let lineMul, lineWin = computeLineResult linesOfSymbol
+
+        { snapshot = snapshot
+          scatterWin = scatterWin
+          lineWin = lineWin
+          lineMul = lineMul
+          scatterMul = scatterMul }
+
+    let randomSpinLevel1 (random: int -> int) =
         Level.spinLevel1 random |> computeResult

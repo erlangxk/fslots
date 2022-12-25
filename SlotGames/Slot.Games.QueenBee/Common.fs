@@ -38,7 +38,7 @@ module Level =
         randomIdx lens height random |> shoot reels
         
 type LineResult<'a> = option<'a * int * bool>
-type LeftRightLineResult<'a> = LineResult<'a>* LineResult<'a>
+type LeftRightLineResult<'a> = LineResult<'a> * LineResult<'a>
 type AllLineResult<'a> = list<LeftRightLineResult<'a>>
 
 module Line =

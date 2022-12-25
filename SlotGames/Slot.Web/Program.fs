@@ -4,6 +4,9 @@ open Falco
 open Falco.Routing
 open Falco.HostBuilder
 open Microsoft.AspNetCore.Builder
+open Slot.Web.Spin
+open BlitzkriegSoftware.SecureRandomLibrary
+
 
 // ------------
 // Exception Handler
@@ -11,6 +14,11 @@ open Microsoft.AspNetCore.Builder
 let exceptionHandler : HttpHandler =
     Response.withStatusCode 500 
     >> Response.ofPlainText "Server error"
+    
+
+let rng  =
+    let sr = SecureRandom()
+    fun max -> sr.Next(0,max)
 
 [<EntryPoint>]
 let main args =   
@@ -19,7 +27,8 @@ let main args =
         use_ifnot FalcoExtensions.IsDevelopment (FalcoExtensions.UseFalcoExceptionHandler exceptionHandler)
         
         endpoints [            
-            get "/" (Response.ofPlainText "Hello world")
+            get "/" (Response.ofPlainText $"Hello world{rng 32}")
+            get "/spin" (playerSpinHandler rng)
         ]
     }
     0

@@ -5,10 +5,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Spin.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
   
   <ItemGroup>
+    <PackageReference Include="BlitzkriegSoftware.SecureRandomLibrary" Version="1.0.4" />
     <PackageReference Include="Falco" Version="3.1.14" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\Slot.Games.QueenBee\Slot.Games.QueenBee.fsproj" />
   </ItemGroup>
 </Project>
