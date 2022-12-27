@@ -1,4 +1,4 @@
-module Slot.Games.Tests.QueenBee.ResultJsonTests
+module ResultJsonTests
 
 
 open Xunit

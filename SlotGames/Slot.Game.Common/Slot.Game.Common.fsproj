@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Include="Core.fs" />
+        <Compile Include="Test.fs" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="FSharpPlus" Version="1.3.2" />
+    </ItemGroup>
+    
+</Project>

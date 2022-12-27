@@ -34,6 +34,8 @@ module Line =
           [ 1; 1; 1; 2; 2 ]
           [ 0; 2; 2; 2; 2 ] ]
         
+    let totalLines = lines.Length
+        
 
 module FreeGame =
     let Crossbow,Gauntlet,Hammer,Helmet = 0,1,2,3
@@ -97,3 +99,8 @@ module MainGame =
         [|Queen;Thief;King;Jack;Crown;Goblet;Queen;King;Wild;Jack;Thief;Sceptre;Ace;Queen;Crown;Jack;Ace;Thief;Queen;King;Goblet;Queen;Sceptre;King;Ace;Sceptre;Queen;Goblet;Ace;Jack;Thief;Sceptre;King;Jack;Goblet;Crown;Jack|]
         [|Thief;King;Queen;Goblet;King;Queen;Sceptre;Crown;Ace;Queen;Sceptre;King;Crown;Jack;Goblet;Thief;King;Queen;Crown;Sceptre;Ace;King;Goblet;Jack;Ace;Crown;Jack;Goblet;King;Crown;Jack;Sceptre;Thief;Goblet;Ace;Jack|]
     ]
+
+module Game =
+    let width,height = 5,3
+    
+    
