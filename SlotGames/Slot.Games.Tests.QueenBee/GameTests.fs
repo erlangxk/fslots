@@ -33,8 +33,7 @@ let testLineOfSymbols () =
 [<Fact>]
 let testCalPlainWin () =
     let ss  = [|[|7; 8; 3|]; [|0; 7; 2|]; [|0; 2; 6|]; [|4; 1; 7|]; [|4; 9; 7|]|]
-    let linesOfSymbol = Game.Line.queenBeePayLines ss
-    let r,_ = Game.Core.computeLineResult linesOfSymbol
+    let r,_ = Game.Core.queenBeeComputeLineResult ss
     Assert.Equal(15, r)
   
 [<Fact>]

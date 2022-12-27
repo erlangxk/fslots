@@ -1,24 +1,23 @@
 module Slot.Games.QueenBee.ResultJson
 
-open Game.Core
+open Slot.Games.QueenBee.Calc
 open FSharp.Collections
 open Thoth.Json.Net
 
-let encodeWin2Seq(win:Win<int>) =
+let encodeWin2Seq(win:Win) =
      seq {
         Encode.string win.dir
-        Encode.int win.symbol
         Encode.int win.count
-        Encode.bool win.subst
         Encode.int win.mul
        }
-let encodeWin (win:Win<int>) =
+let encodeWin (win:Win) =
     encodeWin2Seq win |> Seq.toArray |> Encode.array
 
-let encodeLineWin(lineWin:LineWin<int>) =
+let encodeLineWin (lw:LineWin<int>) =
     seq {
-       yield Encode.int lineWin.line
-       yield! encodeWin2Seq lineWin.win
+       yield Encode.int lw.line
+       yield Encode.int lw.symbol
+       yield! encodeWin2Seq lw.win
     } |> Seq.toArray |> Encode.array
     
 let encodeIntArray(arr:int[]) =

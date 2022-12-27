@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="GameRegistry.fs" />
     <Compile Include="Spin.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

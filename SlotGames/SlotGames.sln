@@ -6,6 +6,8 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Slot.Games.Tests.QueenBee",
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Slot.Web", "Slot.Web\Slot.Web.fsproj", "{AED90619-4423-4BA8-A3EB-274945132439}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Slot.Games.PhantomThief", "Slot.Games.PhantomThief\Slot.Games.PhantomThief.fsproj", "{94B98FFE-1828-400C-A465-3D56D764475A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{AED90619-4423-4BA8-A3EB-274945132439}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AED90619-4423-4BA8-A3EB-274945132439}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AED90619-4423-4BA8-A3EB-274945132439}.Release|Any CPU.Build.0 = Release|Any CPU
+		{94B98FFE-1828-400C-A465-3D56D764475A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{94B98FFE-1828-400C-A465-3D56D764475A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{94B98FFE-1828-400C-A465-3D56D764475A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{94B98FFE-1828-400C-A465-3D56D764475A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

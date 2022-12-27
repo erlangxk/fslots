@@ -3,7 +3,7 @@ module Slot.Games.Tests.QueenBee.ResultJsonTests
 
 open Xunit
 open Slot.Games.QueenBee.ResultJson
-open Slot.Games.QueenBee.Game.Core
+open Slot.Games.QueenBee.Calc
 
 [<Fact>]
 let testEncodeResult () =
