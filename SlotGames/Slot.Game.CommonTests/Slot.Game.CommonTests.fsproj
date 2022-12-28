@@ -2,7 +2,6 @@
 
     <PropertyGroup>
         <TargetFramework>net7.0</TargetFramework>
-
         <IsPackable>false</IsPackable>
         <GenerateProgramFile>false</GenerateProgramFile>
     </PropertyGroup>
@@ -10,6 +9,7 @@
     <ItemGroup>
         <Compile Include="CoreTests.fs" />
         <Compile Include="TestTests.fs" />
+        <Compile Include="CollapseTests.Fs" />
         <Compile Include="Program.fs" />
     </ItemGroup>
 

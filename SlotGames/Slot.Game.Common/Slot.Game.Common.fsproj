@@ -8,6 +8,7 @@
     <ItemGroup>
         <Compile Include="Core.fs" />
         <Compile Include="Test.fs" />
+        <Compile Include="Collapse.fs" />
     </ItemGroup>
 
     <ItemGroup>
