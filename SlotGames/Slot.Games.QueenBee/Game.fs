@@ -2,7 +2,7 @@ namespace Slot.Games.QueenBee
 
 open FSharpPlus
 open Common
-open Slot
+open Slot.Game.Prelude
 
 module Level =
     let width,height = 5,3
@@ -34,11 +34,11 @@ module Level =
           [|2;0;10;3;6;7;0;3;4;1;5;0;4;7;2;5;4;9;7;2;4;5;0;1;7;2;4;7;2;0;8;1;5;6|]
     ]
     
-    Game.Common.Core.checkReels l1 width height
-    Game.Common.Core.checkReels l2 width height
-    Game.Common.Core.checkReels l3 width height
+    Core.checkReels l1 width height
+    Core.checkReels l2 width height
+    Core.checkReels l3 width height
     
-    let private queenBeeSpin = Game.Common.Core.randomSnapshot height
+    let private queenBeeSpin = Core.randomSnapshot height
     let spinLevel1,spinLevel2,spinLevel3  = queenBeeSpin l1,queenBeeSpin l2,queenBeeSpin l3
     
 module PayTable =
@@ -62,9 +62,9 @@ module PayTable =
     let scatterPayTable = Map [(5,100);(4,10);(3,5);(2,1)]
     let multiply2 subst value = if subst then value*2 else value
     let calScatterWin count subst  =
-        scatterPayTable |> Game.Common.Core.getMultiplier count |>> multiply2 subst 
+        scatterPayTable |> Core.getMultiplier count |>> multiply2 subst 
     let calPlainWin symbol count subst  =
-        linePayTable |> Game.Common.Core.getNestedMultiplier symbol count |>> multiply2 subst
+        linePayTable |> Core.getNestedMultiplier symbol count |>> multiply2 subst
     let queenBeeIsWild e = e = Wild
     let queenBeeIsScatter e = e = Scatter
 
@@ -81,7 +81,7 @@ module Line =
     
     let allLines = [l1; l2; l3; l4; l5; l6; l7; l8; l9]
     let totalLines = allLines.Length
-    let queenBeePayLines  = Game.Common.Core.allPayLines allLines
+    let queenBeePayLines  = Core.allPayLines allLines
     let queenBeeCountAllLineTwice = countAllLineTwice Level.width PayTable.queenBeeIsWild
     let queenBeeCountScatter snapshot =
         countScatter snapshot PayTable.queenBeeIsScatter PayTable.queenBeeIsWild

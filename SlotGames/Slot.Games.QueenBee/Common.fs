@@ -1,7 +1,7 @@
 namespace Slot.Games.QueenBee
 
 open FSharpPlus
-open Slot.Game.Common
+open Slot.Game.Prelude
 
 module Common =
     type LeftRightLineResult<'a> = Core.LineResult<'a> * Core.LineResult<'a>
@@ -27,9 +27,7 @@ module Common =
         : AllLineResult<'a> =
         linesOfSymbol |>> countLineTwice width isWild
 
-    let countSymbol<'a> (test: 'a -> bool) =
-        Array.sumBy (fun x -> if test x then 1 else 0)
-
+ 
     let scanScatter (snapshot: 'a[][]) (countScatter: 'a[] -> int) (countWild: 'a[] -> int) =
         let countRest = Array.map (fun reel -> (countScatter reel, countWild reel))
 
@@ -53,8 +51,8 @@ module Common =
         Array.tryHead snapshot >>= countFirst |>> run
 
     let countScatter<'a> (snapshot: 'a[][]) (isScatter: 'a -> bool) (isWild: 'a -> bool) =
-        let cs = countSymbol isScatter
-        let cw = countSymbol isWild
+        let cs = Core.countSymbol isScatter
+        let cw = Core.countSymbol isWild
         let rl = scanScatter snapshot cs cw
         let rr = scanScatter (Array.rev snapshot) cs cw
         rl, rr

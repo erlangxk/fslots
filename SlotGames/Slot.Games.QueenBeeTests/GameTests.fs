@@ -4,18 +4,18 @@ open Xunit
 open Slot.Games.QueenBee
 open FSharpPlus
 open FSharp.Collections.ParallelSeq
-open Slot.Game
+open Slot.Game.Prelude
 
 [<Fact>]
 let testSpin1 () =
-    let rng = Common.Test.fakeRandomSeq [3;4;5;6;7]
+    let rng = Test.fakeRandomSeq [3;4;5;6;7]
     let ss  = Level.spinLevel1 rng
     let er = [|[|2; 4; 7|]; [|3; 5; 2|]; [|9; 4; 0|]; [|4; 9; 2|]; [|3; 4; 1|]|]
     Assert.Equal<int[][]>(er, ss)
     
 [<Fact>]
 let testLineOfSymbols () =
-    let rng = Common.Test.fakeRandomSeq [3;4;5;6;7]
+    let rng = Test.fakeRandomSeq [3;4;5;6;7]
     let ss  = Level.spinLevel1 rng
     let linesOfSymbol = Line.queenBeePayLines ss
     let er = [|[|4; 5; 4; 9; 4|]
@@ -40,13 +40,13 @@ let testCalPlainWin () =
 let testGenStartIdx2 () =
     let ms = [ for l in Level.l1 -> l.Length ]
     Assert.Equal<list<int>>([43; 42; 40; 37; 34],ms)
-    let m = Common.Test.genStartIdx ms |> Seq.take 35 |> Seq.last
+    let m = Test.genStartIdx ms |> Seq.take 35 |> Seq.last
     let er  = [0;0;0;1;0]
     Assert.Equal<list<int>>(er, m)
  
 let spinOnce lens gameLevel idx =
-     let slices = Common.Test.genSlice idx lens Level.height
-     let r =  Common.Core.snapshot gameLevel slices
+     let slices = Test.genSlice idx lens Level.height
+     let r =  Core.snapshot gameLevel slices
      let result = Pack.computeResult r
      result.totalMul
      
@@ -56,7 +56,7 @@ let testMainCycle() =
     let lens = [ for l in gameLevel -> l.Length ]
     let totalCycle = lens |> List.fold (fun s i -> s * i) 1
     let oneSpin = spinOnce lens gameLevel
-    let startIdx = Common.Test.genStartIdx lens
+    let startIdx = Test.genStartIdx lens
     let totalWin = startIdx
                 |> PSeq.map oneSpin
                 |> PSeq.sum

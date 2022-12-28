@@ -1,4 +1,4 @@
-﻿namespace Slot.Game.Common
+﻿namespace Slot.Game.Prelude
 
 open FSharpPlus
 
@@ -63,3 +63,6 @@ module Core =
     
     let getNestedMultiplier<'a when 'a:comparison> (symbol: 'a) (count:int) (payTable:Map<'a,Map<int,int>>) =
         payTable |> (Map.tryFind symbol >=> Map.tryFind count)
+        
+    let countSymbol<'a> (test: 'a -> bool) =
+        Array.sumBy (fun x -> if test x then 1 else 0)

@@ -1,12 +1,10 @@
 module CollapseTests
 
 
-open Slot.Game.Common
+open Slot.Game.Prelude
 open Xunit
-open System
 
 [<Fact>]
-
 let ``test the removal of index matrix`` () = 
     
     let matrix = [
@@ -104,6 +102,6 @@ let ``test reload index matrix`` () =
     ]
     
     let r = Collapse.reloadMatrix om nm [7;41;12;15;21]
-    Assert.Equal(er,r)
+    Assert.Equal<list<list<int>>>(er,r)
     
     

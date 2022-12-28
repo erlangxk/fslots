@@ -18,7 +18,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Slot.Game.Common\Slot.Game.Common.fsproj" />
+      <ProjectReference Include="..\Slot.Game.Prelude\Slot.Game.Prelude.fsproj" />
     </ItemGroup>
 
 </Project>

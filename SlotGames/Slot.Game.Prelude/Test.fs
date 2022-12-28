@@ -1,4 +1,4 @@
-namespace Slot.Game.Common
+namespace Slot.Game.Prelude
 
 module Test =
     let fakeRandomSeq (numbers:seq<int>) =

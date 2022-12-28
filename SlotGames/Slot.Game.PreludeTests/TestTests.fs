@@ -1,7 +1,7 @@
 module TestTests
 
 open Xunit
-open Slot.Game.Common
+open Slot.Game.Prelude
 
 [<Fact>]
 let fakeRandomSeq1 () =

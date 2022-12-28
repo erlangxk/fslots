@@ -1,4 +1,4 @@
-module Slot.Game.Common.Collapse
+module Slot.Game.Prelude.Collapse
 
 
 

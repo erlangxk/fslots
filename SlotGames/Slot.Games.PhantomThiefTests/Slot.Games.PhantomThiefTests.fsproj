@@ -2,14 +2,13 @@
 
     <PropertyGroup>
         <TargetFramework>net7.0</TargetFramework>
+
         <IsPackable>false</IsPackable>
         <GenerateProgramFile>false</GenerateProgramFile>
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Include="CoreTests.fs" />
-        <Compile Include="TestTests.fs" />
-        <Compile Include="CollapseTests.Fs" />
+        <Compile Include="Tests.fs" />
         <Compile Include="Program.fs" />
     </ItemGroup>
 
@@ -27,7 +26,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Slot.Game.Common\Slot.Game.Common.fsproj" />
+      <ProjectReference Include="..\Slot.Games.PhantomThief\Slot.Games.PhantomThief.fsproj" />
     </ItemGroup>
 
 </Project>

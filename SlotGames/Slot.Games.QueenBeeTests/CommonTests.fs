@@ -45,14 +45,7 @@ let countAllLineTwice () =
     Assert.Equal<Common.LeftRightLineResult<int>>(er, rr)
     
     
-[<Fact>]
-let countSymbolTest () =
-   let count = Common.countSymbol (equal 2)
-   Assert.Equal(1,  count [|2;4;7|])
-   Assert.Equal(2,  count [|2;2;7|])
-   Assert.Equal(3,  count [|2;2;2|])
-   Assert.Equal(0,  count [|0;1;3|])
-   Assert.Equal(0,  count [||])
+
 let ss = [|[|2;4;7|];[|3;5;2|];[|9;4;0|];[|4;9;2|];[|3;4;1|]|]
 
 [<Fact>]
