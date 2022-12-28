@@ -3,6 +3,7 @@ module CommonTests
 open FSharpPlus
 open Xunit
 open Slot.Games.QueenBee
+open Slot.Game.Prelude
 
 let equal i =  fun j-> i=j 
 
@@ -50,32 +51,32 @@ let ss = [|[|2;4;7|];[|3;5;2|];[|9;4;0|];[|4;9;2|];[|3;4;1|]|]
 
 [<Fact>]
 let scanTest1 () =
-   let cs = Common.countSymbol (equal 2)
-   let cw = Common.countSymbol (equal 0)
+   let cs = Core.countSymbol (equal 2)
+   let cw = Core.countSymbol (equal 0)
    let r = Common.scanScatter ss cs cw   
    let expected = Some(4, true)
    Assert.Equal(expected, r)
    
 [<Fact>]
 let scanTest2 () =
-   let cs = Common.countSymbol (equal 2)
-   let cw = Common.countSymbol (equal 5)
+   let cs = Core.countSymbol (equal 2)
+   let cw = Core.countSymbol (equal 5)
    let r = Common.scanScatter ss cs cw   
    let expected = Some(3, true)
    Assert.Equal(expected, r)
    
 [<Fact>]
 let scanTest3 () =
-   let cs = Common.countSymbol (equal 2)
-   let cw = Common.countSymbol (equal 5)
+   let cs = Core.countSymbol (equal 2)
+   let cw = Core.countSymbol (equal 5)
    let r = Common.scanScatter Array.empty cs cw   
    let expected = None
    Assert.Equal(expected, r)
 
 [<Fact>]
 let scanTest4 () =
-   let cs = Common.countSymbol (equal 10)
-   let cw = Common.countSymbol (equal 11)
+   let cs = Core.countSymbol (equal 10)
+   let cw = Core.countSymbol (equal 11)
    let r = Common.scanScatter ss cs cw   
    let expected = None
    Assert.Equal(expected, r)

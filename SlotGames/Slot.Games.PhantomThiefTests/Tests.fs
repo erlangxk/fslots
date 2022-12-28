@@ -19,4 +19,4 @@ let ``count bonus`` () =
     Assert.Equal(2,r)
     
     let r = Common.countBonus (fun x-> x=4) ss
-    Assert.Equal(2,r)
+    Assert.Equal(4,r)
