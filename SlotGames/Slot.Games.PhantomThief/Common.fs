@@ -1,6 +1,7 @@
 namespace Slot.Games.PhantomThief
 
 open Slot.Game.Prelude
+open FSharpPlus
 
 module Common =
 
@@ -8,7 +9,6 @@ module Common =
         if r <= 0.3350m then 2
         elif r <= 0.6500m then 3
         else 4
-
 
     let countBonus<'a when 'a: equality> (isBonus: 'a -> bool) (snapshot: 'a[][]) =
         snapshot |> Seq.fold (fun count arr -> count + Core.countSymbol isBonus arr) 0
@@ -31,3 +31,46 @@ module Common =
         let init = gems |> List.map (fun g -> g, List.empty<Pos>) |> Map.ofList
 
         Seq.fold folder init all
+
+    let calcGemsMul(payTable: Map<'a, Map<int, int>>) (result: Map<'a, list<Pos>>)  =
+        seq {
+            for kv in result do
+                let c = List.length kv.Value
+                let m = Core.getNestedMultiplier kv.Key c payTable
+                if m.IsSome then
+                    yield kv.Key, kv.Value, m.Value
+        }
+
+    let countGemsWin<'a when 'a: comparison> (gems: list<'a>)(payTable: Map<'a, Map<int, int>>)(snapshot: 'a[][]) =
+        countGems gems snapshot |> calcGemsMul payTable
+    
+    type LineWin<'a> = int * 'a * int * int
+
+    let computeLineResult<'a>
+        (payLines: 'a[][] -> list<list<'a>>)
+        (countLine: list<list<'a>> -> list<Core.LineResult<'a>>)
+        (calcMul: 'a -> int -> option<int>)
+        (snapshot: 'a[][])
+        =
+        let folder (state: int * list<LineWin<'a>>) (line: int) (r: Core.LineResult<'a>) =
+            let win result =
+                monad {
+                    let! s, c, _ = result
+                    let! m = calcMul s c
+                    return (line, s, c, m)
+                }
+
+            let t, ls = state
+
+            match win r with
+            | None -> state
+            | Some(_, _, _, m as w) -> (t + m), w :: ls
+
+        snapshot |> payLines |> countLine |> (foldi folder (0, []))
+
+
+    let winLineCount<'a> (lines: Map<int, list<int>>) (lineWins: list<LineWin<'a>>) : list<Collapse.LineCount> =
+        lineWins
+        |> List.map (fun (line, _, count, _) ->
+            let l = Map.find line lines
+            l, count)

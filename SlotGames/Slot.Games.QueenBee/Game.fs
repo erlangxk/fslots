@@ -43,9 +43,9 @@ module Level =
     Core.checkReels l3 width height
     
     let private queenBeeSpin = Core.randomSnapshot height
-    let spinLevel1 =queenBeeSpin l1 lens1
+    let spinLevel1 = queenBeeSpin l1 lens1
     let spinLevel2 = queenBeeSpin l2 lens2
-    let spinLevel3  = queenBeeSpin l3 lens3
+    let spinLevel3 = queenBeeSpin l3 lens3
     
 module PayTable =
     let Ten,Jack,Queen,King,Ace = 0,1,2,3,4
