@@ -53,7 +53,7 @@ let spinOnce lens gameLevel idx =
 //[<Fact>]
 let testMainCycle() =
     let gameLevel = Level.l1
-    let lens = [ for l in gameLevel -> l.Length ]
+    let lens = Core.lens gameLevel
     let totalCycle = lens |> List.fold (fun s i -> s * i) 1
     let oneSpin = spinOnce lens gameLevel
     let startIdx = Test.genStartIdx lens
@@ -72,7 +72,7 @@ let rng  =
 //[<Ignore("rtp")>]
 [<Fact>]
 let randomSpinLevel1() =
-    let times = 100
+    let times = 1000000
     let mutable total:double = 0.0
     for i in 1..times do
         let r = Pack.randomSpinLevel1 rng

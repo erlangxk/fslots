@@ -15,6 +15,7 @@ module Level =
         [|3;5;10;4;8;2;4;9;2;1;11;2;8;6;0;3;6;5;2;6;4;1;7;2;5;3;1;7;2;6;4;1;8;3;6;0;1|];
         [|2;0;10;3;6;7;0;3;4;1;5;0;4;7;2;5;4;9;7;2;4;5;0;1;7;2;4;7;2;0;8;1;5;6|]
     ]
+    let lens1 = Core.lens l1
     
     //RTP = 0.9339259632022288
     let l2 = [
@@ -24,6 +25,8 @@ module Level =
           [|3;5;10;4;8;2;4;9;2;1;11;2;8;6;0;3;6;5;2;6;4;1;7;2;5;3;1;7;2;6;4;1;8;3;6;0;1|];
           [|2;0;10;3;6;7;0;3;4;1;5;0;4;7;2;5;4;9;7;2;4;5;0;1;7;2;4;7;2;0;8;1;5;6|] 
     ]
+    
+    let lens2 = Core.lens l2
 
     //RTP = 0.9057785266780308
     let l3 = [
@@ -33,13 +36,16 @@ module Level =
           [|3;5;10;4;8;2;4;9;2;1;11;2;8;6;0;3;6;5;2;6;4;1;7;2;5;3;1;7;2;6;4;1;8;3;6;0;1|];
           [|2;0;10;3;6;7;0;3;4;1;5;0;4;7;2;5;4;9;7;2;4;5;0;1;7;2;4;7;2;0;8;1;5;6|]
     ]
+    let lens3 = Core.lens l3
     
     Core.checkReels l1 width height
     Core.checkReels l2 width height
     Core.checkReels l3 width height
     
     let private queenBeeSpin = Core.randomSnapshot height
-    let spinLevel1,spinLevel2,spinLevel3  = queenBeeSpin l1,queenBeeSpin l2,queenBeeSpin l3
+    let spinLevel1 =queenBeeSpin l1 lens1
+    let spinLevel2 = queenBeeSpin l2 lens2
+    let spinLevel3  = queenBeeSpin l3 lens3
     
 module PayTable =
     let Ten,Jack,Queen,King,Ace = 0,1,2,3,4

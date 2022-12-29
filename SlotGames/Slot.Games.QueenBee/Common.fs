@@ -5,7 +5,6 @@ open Slot.Game.Prelude
 
 module Common =
     type LeftRightLineResult<'a> = Core.LineResult<'a> * Core.LineResult<'a>
-    type AllLineResult<'a> = list<LeftRightLineResult<'a>>
 
     let countLineTwice<'a when 'a: equality>
         (width: int)
@@ -24,7 +23,7 @@ module Common =
         (width: int)
         (isWild: 'a -> bool)
         (linesOfSymbol: list<list<'a>>)
-        : AllLineResult<'a> =
+        : list<LeftRightLineResult<'a>> =
         linesOfSymbol |>> countLineTwice width isWild
 
  

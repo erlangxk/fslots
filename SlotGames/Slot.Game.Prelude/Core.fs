@@ -4,6 +4,9 @@ open FSharpPlus
 
 module Core =
     type Reel<'a> = 'a[]
+    
+    let lens (reels: Reel<'a> list) = [ for l in reels -> Array.length l ]
+    
     let idxRing (len: int) (start: int) (size: int) =
         [ for i in start .. size + start - 1 -> i % len ]
     
@@ -17,10 +20,9 @@ module Core =
     let snapshot(reels: Reel<'a> list)(reelIdx: list<list<int>>):Snapshot<'a> =
         let oneReel reel idx =  (cherryPick reel idx) |> List.toArray
         List.map2 oneReel reels reelIdx |> List.toArray
-    
-    let randomSnapshot<'a> (height: int)(reels: Reel<'a> list)(random: int -> int) =
-        let lens = [ for l in reels -> Array.length l ]
-        randomReelIdx lens height random |> snapshot reels
+        
+    let randomSnapshot<'a> (height: int)(reels: Reel<'a> list)(lens: list<int>)(random: int -> int) =
+        randomReelIdx  lens height random |> snapshot reels
 
     let onePayLine<'a>(snapshot: 'a[][])=
         List.mapi( fun i j -> snapshot[i][j])

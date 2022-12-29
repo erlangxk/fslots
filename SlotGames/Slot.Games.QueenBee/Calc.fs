@@ -51,14 +51,14 @@ let addOneWin<'T when 'T :> IMul> (win: option<'T>) (state: int * list<'T>) =
 
 let computeLineResult<'a>
     (payLines: 'a[][] -> list<list<'a>>)
-    (countLineTwice: list<list<'a>> -> AllLineResult<int>)
-    (calLineWin: int -> int -> bool -> option<int>)
+    (countLineTwice: list<list<'a>> -> list<LeftRightLineResult<'a>>)
+    (calLineWin: 'a -> int -> bool -> option<int>)
     (snapshot: 'a[][])
     =
     let linesOfSymbol = payLines snapshot
     let countAllLines = countLineTwice linesOfSymbol
 
-    let folder (state: int * list<LineWin<int>>) (line: int) ((lr, rr): LeftRightLineResult<int>) =
+    let folder (state: int * list<LineWin<'a>>) (line: int) ((lr, rr): LeftRightLineResult<'a>) =
         let cal dir result =
             monad {
                 let! s, c, subst = result
