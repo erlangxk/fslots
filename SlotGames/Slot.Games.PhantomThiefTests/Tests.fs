@@ -69,3 +69,52 @@ let ``count bonus`` () =
 
     let r = Common.countBonus (fun x -> x = 4) ss
     Assert.Equal(4, r)
+
+
+[<Fact>]
+let ``concat gem idx `` () =
+    let result = [ 4, [ (4, 1); (3, 0); (2, 1); (0, 1) ], 20; 3, [ (4, 0); (1, 0) ], 2 ]
+    let r = Common.allGemsIdx result
+
+    let er =
+        seq {
+            (4, 1)
+            (3, 0)
+            (2, 1)
+            (0, 1)
+            (4, 0)
+            (1, 0)
+        }
+
+    Assert.Equal<seq<int * int>>(er, r)
+
+
+[<Fact>]
+let ``concat line idx`` () =
+    //int * 'a * int * int
+    let lineWin =
+        [ 0, "a", 3, 1; 1, "b", 2, 0; 2, "c", 1, 4; 3, "e", 3, 2; 4, "f", 4, 3 ]
+
+    let lines =
+        [ [ 1; 1; 1; 1; 1 ]
+          [ 0; 0; 0; 0; 0 ]
+          [ 2; 2; 2; 2; 2 ]
+          [ 0; 0; 1; 1; 1 ]
+          [ 2; 2; 1; 1; 1 ] ]
+
+    let lineMap = List.indexed lines |> Map.ofList
+    let r = Common.allLineIdx lineMap lineWin
+
+    let er =
+        seq {
+            (0, 1)
+            (1, 1)
+            (2, 1)
+            (0, 0)
+            (1, 0)
+            (0, 2)
+            (1, 2)
+            (3, 1)
+        }
+
+    Assert.Equal<seq<int * int>>(er, r)

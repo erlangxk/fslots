@@ -47,8 +47,8 @@ module FeatureGame =
 
     let collapse idxMatrix lineResult gemsResult reels lens = 
         let idx = seq {
-            yield! Common.winIdx Config.Line.lineMap lineResult
-            yield! Common.allGemsPos gemsResult
+            yield! Common.allLineIdx Config.Line.lineMap lineResult
+            yield! Common.allGemsIdx gemsResult
         }
         let newIdxMatrix = Collapse.collapse idxMatrix idx lens
         let ss = Core.snapshot reels newIdxMatrix
@@ -95,7 +95,7 @@ module MainGame =
         idxMatrix, ss, mul, lineResult, bonus
 
     let collapse idxMatrix lineResult reels lens =
-        let lineCs = Common.winIdx Config.Line.lineMap lineResult
+        let lineCs = Common.allLineIdx Config.Line.lineMap lineResult
         let newIdxMatrix = Collapse.collapse idxMatrix lineCs lens
         let ss = Core.snapshot reels newIdxMatrix
         let (mul, lineResult) = computeLinResult ss

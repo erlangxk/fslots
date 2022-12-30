@@ -19,7 +19,7 @@ module Common =
     let countBonus<'a when 'a: equality> (isBonus: 'a -> bool) (snapshot: 'a[][]) =
         snapshot |> Seq.fold (fun count arr -> count + Core.countSymbol isBonus arr) 0
 
-    type Pos = int * int
+    type Idx = int * int
 
     let internal countGems<'a when 'a: comparison> (gems: list<'a>) (snapshot: 'a[][]) =
         let all =
@@ -29,20 +29,20 @@ module Common =
                         (i, j, snapshot[i][j])
             }
 
-        let folder (state: Map<'a, list<Pos>>) (i, j, e) =
+        let folder (state: Map<'a, list<Idx>>) (i, j, e) =
             match Map.tryFind e state with
             | Some(l) -> state |> Map.add e ((i, j) :: l)
             | None -> state
 
-        let init = gems |> List.map (fun g -> g, List.empty<Pos>) |> Map.ofList
+        let init = gems |> List.map (fun g -> g, List.empty<Idx>) |> Map.ofList
 
         Seq.fold folder init all
 
-    type GemWin<'a> = 'a * list<Pos> * int
+    type GemWin<'a> = 'a * list<Idx> * int
     type GemWinResult<'a> = list<GemWin<'a>>
     type TotalGemWinResult<'a> = int * GemWinResult<'a>
 
-    let allGemsPos (gemsResult: GemWinResult<'a>) =
+    let allGemsIdx (gemsResult: GemWinResult<'a>) =
         seq {
             for (_, ls, _) in gemsResult do
                 yield! ls
@@ -50,7 +50,7 @@ module Common =
 
     let internal calcGemsMul<'a when 'a: comparison>
         (payTable: Map<'a, Map<int, int>>)
-        (result: Map<'a, list<Pos>>)
+        (result: Map<'a, list<Idx>>)
         : TotalGemWinResult<'a> =
         let folder (tm, ls) gem pos =
             let c = List.length pos
@@ -93,12 +93,12 @@ module Common =
         snapshot |> payLines |> countLine |> lineWinResult calcMul
 
 
-    let winIdx<'a> (lines: Map<int, list<int>>) (lineResult: LineWinResult<'a>) =
+    let allLineIdx<'a> (lines: Map<int, list<int>>) (lineResult: LineWinResult<'a>) =
         seq {
             for (line, _, count, _) in lineResult do
                 let ls = Map.find line lines
                 yield! ls |> Seq.take count |> Seq.mapi (fun i j -> i, j)
-        }
+        } |> Seq.distinct
 
     type Action =
         | Spin
