@@ -22,7 +22,7 @@ let ``test the removal of index matrix`` () =
         [ 2; 2; 1; 1; 1 ],4
     ]
     
-    let r = Collapse.labelIdxMatrix matrix lines
+    let r = Collapse.removeWinIdx matrix lines
     
     let er = [
         []

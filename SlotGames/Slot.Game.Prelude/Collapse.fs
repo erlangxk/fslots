@@ -2,7 +2,7 @@ module Slot.Game.Prelude.Collapse
 
 type LineCount =   list<int> * int
 
-let labelIdxMatrix(matrix:list<list<int>>)(lines:List<LineCount>)=
+let removeWinIdx(matrix:list<list<int>>)(lines:List<LineCount>)=
     let arrMatrix = matrix |> List.map List.toArray |> List.toArray 
     lines |> Seq.iter (fun (ls,c) -> 
        let action =  Seq.take c >> Seq.iteri (fun i j -> arrMatrix[i][j]<- -1) 
@@ -21,5 +21,5 @@ let reloadIdxMatrix(oldMatrix:list<list<int>>)(newMatrix:list<list<int>>)(lens:l
    List.map3 reloadReel oldMatrix newMatrix lens
    
 let collapse(matrix:list<list<int>>)(lines:List<LineCount>)(lens:list<int>) =
-    let nm = labelIdxMatrix matrix lines
+    let nm = removeWinIdx matrix lines
     reloadIdxMatrix matrix nm lens

@@ -13,7 +13,18 @@ let ``count consecutive symbols`` () =
     Assert.Equal(Some(4, 3, true), cf [ 4; 3; 4; 5; 4 ])
     Assert.Equal(Some(4, 5, true), cf [ 4; 3; 3; 3; 4 ])
     Assert.Equal(Some(4, 1, false), cf [ 4; 5; 3; 3; 4 ])
-
+    
+    
+[<Fact>]
+let ``count consecutive symbols without wild`` () =
+    let cf = Core.countConsecutiveSymbolsNoWild
+    Assert.Equal(Some(2, 1, false), cf [ 2; 3; 4 ])
+    Assert.Equal(None, cf [])
+    Assert.Equal(Some(3, 3, false), cf [ 3; 3; 3 ])
+    Assert.Equal(Some(4, 1, false), cf [ 4; 3; 4; 5; 4 ])
+    Assert.Equal(Some(4, 3, false), cf [ 4; 4; 4; 3; 4 ])
+    Assert.Equal(Some(4, 5, false), cf [ 4; 4; 4; 4; 4 ])
+    
 [<Fact>]
 let ``check pick from one reel`` () =
 
