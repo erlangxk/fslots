@@ -126,6 +126,7 @@ let fullCycleMainGame game reels lens =
    let mutable totalCollapseMul = 0
    let mutable spin = 0
    let mutable collapse = 0
+   
    let spinOnce idx =
      spin <- spin + 1
      let slices = Test.genSlice idx lens Config.height
@@ -142,7 +143,7 @@ let fullCycleMainGame game reels lens =
          while run do
             collapse <- collapse + 1
             let r = MainGame.collapse runningIdxMatrix runningLineResult runningBonus reels lens
-            let idxMatrix, ss, mul, lineResult, bonus = r
+            let idxMatrix, _, mul, lineResult, bonus = r
             if bonus.Length =3 then totalFreeSpin <- totalFreeSpin + 6
             if mul > 0 || bonus.Length>=3 then  
                 runningIdxMatrix <- idxMatrix
@@ -168,15 +169,13 @@ let fullCycleMainGame game reels lens =
    printfn $"full cycle's RTP = {double totalWin / double totalCost}"  
 
 [<Fact>]
-
 let ``test fully cycle of MainGameA`` () =
    let reels = Config.MainGame.MainA
    let lens = Config.MainGame.lensMainA
    fullCycleMainGame "MainGameA" reels lens
      
       
-//[<Fact>]
-
+[<Fact>]
 let ``test fully cycle of MainGameB`` () =
    let reels = Config.MainGame.MainB
    let lens = Config.MainGame.lensMainB

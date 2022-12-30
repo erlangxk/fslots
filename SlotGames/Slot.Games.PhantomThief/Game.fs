@@ -15,7 +15,17 @@ module FeatureGame =
     let chooseGame (rng: unit->float) =
         let chance = rng ()
         if chance <= 0.0100 then FeatureGameA else FeatureGameB
+        
+    let randomFreeGame (rng: unit -> float) =
+        let r = rng ()
 
+        if r <= 0.3350 then 2
+        elif r <= 0.6500 then 3
+        else 4
+
+    let freeSpin(bonusNum:int)(rng: unit -> float) =
+            if bonusNum < 3 then 0 else randomFreeGame rng
+    
     let calcLineWin symbol count =
         Config.FeatureGame.linePayTable |> Core.getNestedMultiplier symbol count
 
@@ -109,6 +119,7 @@ module MainGame =
         let bonus = countBonus ss
         newIdxMatrix, ss, mul, lineResult, bonus
 
+    let freeSpin(bonusNum:int) = if bonusNum = 3 then 6 else 0
 module State =
     open Common
 
@@ -116,14 +127,14 @@ module State =
         true, MainGame.chooseGame rng, Action.Spin, None
 
     let nextGameAction (gameState: GameState) (rng: unit -> float) =
-        if (gameState.lineMul + gameState.gemsMul = 0) then
+        if (gameState.lineMul + gameState.gemsMul = 0 && gameState.bonus.Length < 3) then
             if (gameState.freeSpin <> 0) then
                 false, FeatureGame.chooseGame rng, Action.Spin, None
             else
                 true, MainGame.chooseGame rng, Action.Spin, None
 
         else
-            gameState.mainGame, gameState.name, Action.Cascade, Some(gameState)
+            gameState.mainGame, gameState.name, Action.Collapse, Some(gameState)
 
     let loadState (state: option<GameState>) (rng: unit -> float) =
         match state with
@@ -144,10 +155,11 @@ module State =
         
         if (mainGame) then
             let reels, lens = MainGame.getReel gameName
-            if action = Action.Spin then
+            match action with
+             | Action.Spin->
                 let spinResult = MainGame.spin reels lens rng1
                 let idxMatrix, ss, mul, lineResult, bonus = spinResult
-                let freeSpin = if bonus.Length = 3 then 6 else 0
+                let freeSpin = MainGame.freeSpin bonus.Length
                 { mainGame = true
                   freeSpin = freeSpin
                   name = gameName
@@ -158,12 +170,11 @@ module State =
                   gemsMul = 0
                   gemsResult = []
                   bonus = bonus }
-            else
+             | Action.Collapse ->
                 let s = Option.get state
                 let cascadeResult = MainGame.collapse s.idxMatrix s.lineResult s.bonus reels lens
                 let idxMatrix, ss, mul, lineResult, bonus = cascadeResult
-                let freeSpin = if bonus.Length = 3 then 6 else 0
-
+                let freeSpin = MainGame.freeSpin bonus.Length
                 { s with
                     snapshot = ss
                     idxMatrix = idxMatrix
@@ -174,15 +185,11 @@ module State =
 
         else
             let reels, lens = FeatureGame.getReel gameName
-
-            if action = Action.Spin then
+            match action with 
+              |Action.Spin ->
                 let spinResult = FeatureGame.spin reels lens rng1
                 let idxMatrix, ss, lineMul, lineResult, gemsMul, gemsResult, bonus = spinResult
-                let freeSpin =
-                    if bonus.Length = 3 then
-                        Common.randomFreeGame rng2
-                    else
-                        0
+                let freeSpin = FeatureGame.freeSpin bonus.Length  rng2   
                 { mainGame = true
                   freeSpin = freeSpin
                   name = gameName
@@ -193,15 +200,11 @@ module State =
                   gemsMul = gemsMul
                   gemsResult = gemsResult
                   bonus = bonus}
-            else
+              |Action.Collapse ->
                 let s = Option.get state
                 let cascadeResult = FeatureGame.collapse s.idxMatrix s.lineResult s.gemsResult s.bonus reels lens
                 let idxMatrix, ss, lineMul, lineResult, gemsMul, gemsResult, bonus = cascadeResult
-                let freeSpin =
-                    if bonus.Length = 3 then
-                        Common.randomFreeGame rng2
-                    else
-                        0
+                let freeSpin = FeatureGame.freeSpin bonus.Length rng2
                 { s with
                     snapshot = ss
                     idxMatrix = idxMatrix

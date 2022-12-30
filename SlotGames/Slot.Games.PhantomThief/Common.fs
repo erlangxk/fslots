@@ -9,13 +9,6 @@ do ()
 
 module Common =
 
-    let randomFreeGame (rng: unit -> float) =
-        let r = rng ()
-
-        if r <= 0.3350 then 2
-        elif r <= 0.6500 then 3
-        else 4
-
     type Idx = int * int
     
     let countBonus<'a when 'a: equality> (isBonus: 'a -> bool) (snapshot: 'a[][]) =
@@ -56,8 +49,6 @@ module Common =
                 yield! ls
         }
         
-   
-
     let internal calcGemsMul<'a when 'a: comparison>
         (payTable: Map<'a, Map<int, int>>)
         (result: Map<'a, list<Idx>>)
@@ -112,7 +103,7 @@ module Common =
 
     type Action =
         | Spin
-        | Cascade
+        | Collapse
 
     type GameState =
         { mainGame: bool
