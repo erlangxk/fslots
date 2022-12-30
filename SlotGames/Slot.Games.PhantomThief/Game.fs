@@ -87,16 +87,19 @@ module MainGame =
         else
             Config.MainGame.MainB, Config.MainGame.lensMainB
 
-    let spin reels lens rng =
-        let idxMatrix = Core.randomReelIdx lens Config.height rng
+    let shoot reels idxMatrix =
         let ss = Core.snapshot reels idxMatrix
         let (mul, lineResult) = computeLinResult ss
         let bonus = countBonus ss
         idxMatrix, ss, mul, lineResult, bonus
+    
+    let spin reels lens rng =
+        let idxMatrix = Core.randomReelIdx lens Config.height rng
+        shoot reels idxMatrix
 
     let collapse idxMatrix lineResult reels lens =
-        let lineCs = Common.allLineIdx Config.Line.lineMap lineResult
-        let newIdxMatrix = Collapse.collapse idxMatrix lineCs lens
+        let idx = Common.allLineIdx Config.Line.lineMap lineResult
+        let newIdxMatrix = Collapse.collapse idxMatrix idx lens
         let ss = Core.snapshot reels newIdxMatrix
         let (mul, lineResult) = computeLinResult ss
         let bonus = countBonus ss

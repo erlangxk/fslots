@@ -1,6 +1,7 @@
 module Tests
 
 open System
+open Slot.Game.Prelude
 open Xunit
 open Slot.Games.PhantomThief
 
@@ -118,3 +119,70 @@ let ``concat line idx`` () =
         }
 
     Assert.Equal<seq<int * int>>(er, r)
+
+let fullCycleMainGame game reels lens =
+   let mutable totalFreeSpin = 0
+   let mutable totalSpinMul = 0
+   let mutable totalCollapseMul = 0
+   let mutable spin = 0
+   let mutable collapse = 0
+   let spinOnce idx =
+     spin <- spin + 1
+     let slices = Test.genSlice idx lens Config.height
+     let idxMatrix, _, mul, lineResult, bonus =  MainGame.shoot reels slices
+     if bonus =3 then totalFreeSpin <- totalFreeSpin + 6
+     totalSpinMul <- totalSpinMul + mul
+
+     if(mul >0 ) then 
+         let mutable run = true
+         let mutable runningIdxMatrix = idxMatrix
+         let mutable runningLineResult = lineResult
+         while run do
+            collapse <- collapse + 1
+            let r = MainGame.collapse runningIdxMatrix runningLineResult reels lens
+            let idxMatrix, ss, mul, lineResult, bonus = r
+            if bonus =3 then totalFreeSpin <- totalFreeSpin + 6
+            if mul > 0 then  
+                runningIdxMatrix <- idxMatrix
+                runningLineResult <- lineResult
+                totalCollapseMul <- totalCollapseMul + mul
+            else
+                run <- false
+   let startIdx = Test.genStartIdx lens
+   startIdx |> Seq.iter spinOnce 
+   let totalWin = totalCollapseMul + totalSpinMul
+   let totalCost = spin * 30
+   printfn $"game:{game}"
+   printfn $"totalWin:{totalWin}"
+   printfn $"totalSpin:{spin}"
+   printfn $"totalSpinMul:{totalSpinMul}"
+   printfn $"totalCollapse:{collapse}"
+   printfn $"totalSpinMul:{totalCollapseMul}"
+   printfn $"totalFreeSpin:{totalFreeSpin}"
+   
+   printfn $"non Tum RTP  = {double totalSpinMul / double totalCost}"
+   printfn $"Tum RTP  = {double totalCollapseMul / double totalCost}"
+   printfn $"full cycle's RTP = {double totalWin / double totalCost}"  
+
+[<Fact>]
+
+let ``test fully cycle of MainGameA`` () =
+   let reels = Config.MainGame.MainA
+   let lens = Config.MainGame.lensMainA
+   fullCycleMainGame "MainGameA" reels lens
+     
+      
+[<Fact>]
+
+let ``test fully cycle of MainGameB`` () =
+   let reels = Config.MainGame.MainB
+   let lens = Config.MainGame.lensMainB
+   fullCycleMainGame "MainGameB" reels lens
+     
+      
+                       
+   
+             
+         
+     
+     
