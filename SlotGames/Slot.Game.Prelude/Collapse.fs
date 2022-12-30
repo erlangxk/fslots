@@ -1,25 +1,27 @@
 module Slot.Game.Prelude.Collapse
 
-type LineCount =   list<int> * int
+open System.Runtime.CompilerServices
 
-let removeWinIdx(matrix:list<list<int>>)(lines:List<LineCount>)=
+[<assembly: InternalsVisibleTo("Slot.Game.PreludeTests")>]
+do ()
+
+let private TAG_REMOVE = -1
+
+let internal removeIdx(matrix:list<list<int>>)(idxToRemove:seq<int*int>)=
     let arrMatrix = matrix |> List.map List.toArray |> List.toArray 
-    lines |> Seq.iter (fun (ls,c) -> 
-       let action =  Seq.take c >> Seq.iteri (fun i j -> arrMatrix[i][j]<- -1) 
-       ls |> action
-    )
+    idxToRemove |> Seq.iter (fun (i,j)-> arrMatrix[i][j] <- TAG_REMOVE)
     arrMatrix
-    |> Seq.map (fun arr-> Seq.filter (fun i-> i <> -1) arr |> Seq.toList)
+    |> Seq.map (fun arr-> Seq.filter (fun i-> i <> TAG_REMOVE) arr |> Seq.toList)
     |> Seq.toList
 
-let reloadReel (ol:list<int>) (nl:list<int>) (l:int) =
+let internal reloadReel (ol:list<int>) (nl:list<int>) (l:int) =
         let next = ol.Head
         let size = ol.Length - nl.Length
         [for i in size.. -1 ..1 do yield (next-i+l) % l] @ nl
                    
-let reloadIdxMatrix(oldMatrix:list<list<int>>)(newMatrix:list<list<int>>)(lens:list<int>)=
+let internal reloadIdxMatrix(oldMatrix:list<list<int>>)(newMatrix:list<list<int>>)(lens:list<int>)=
    List.map3 reloadReel oldMatrix newMatrix lens
    
-let collapse(matrix:list<list<int>>)(lines:List<LineCount>)(lens:list<int>) =
-    let nm = removeWinIdx matrix lines
+let collapse(matrix:list<list<int>>)(idx:seq<int*int>)(lens:list<int>) =
+    let nm = removeIdx matrix idx
     reloadIdxMatrix matrix nm lens

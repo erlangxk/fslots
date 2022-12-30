@@ -2,12 +2,18 @@ namespace Slot.Games.PhantomThief
 
 open Slot.Game.Prelude
 open FSharpPlus
+open System.Runtime.CompilerServices
+
+[<assembly: InternalsVisibleTo("Slot.Games.PhantomThiefTests")>]
+do ()
 
 module Common =
 
-    let randomFreeGame (r: decimal) =
-        if r <= 0.3350m then 2
-        elif r <= 0.6500m then 3
+    let randomFreeGame (rng: unit -> float) =
+        let r = rng ()
+
+        if r <= 0.3350 then 2
+        elif r <= 0.6500 then 3
         else 4
 
     let countBonus<'a when 'a: equality> (isBonus: 'a -> bool) (snapshot: 'a[][]) =
@@ -15,7 +21,7 @@ module Common =
 
     type Pos = int * int
 
-    let countGems<'a when 'a: comparison> (gems: list<'a>) (snapshot: 'a[][]) =
+    let internal countGems<'a when 'a: comparison> (gems: list<'a>) (snapshot: 'a[][]) =
         let all =
             seq {
                 for i in 0 .. snapshot.Length - 1 do
@@ -32,45 +38,79 @@ module Common =
 
         Seq.fold folder init all
 
-    let calcGemsMul(payTable: Map<'a, Map<int, int>>) (result: Map<'a, list<Pos>>)  =
+    type GemWin<'a> = 'a * list<Pos> * int
+    type GemWinResult<'a> = list<GemWin<'a>>
+    type TotalGemWinResult<'a> = int * GemWinResult<'a>
+
+    let allGemsPos (gemsResult: GemWinResult<'a>) =
         seq {
-            for kv in result do
-                let c = List.length kv.Value
-                let m = Core.getNestedMultiplier kv.Key c payTable
-                if m.IsSome then
-                    yield kv.Key, kv.Value, m.Value
+            for (_, ls, _) in gemsResult do
+                yield! ls
         }
 
-    let countGemsWin<'a when 'a: comparison> (gems: list<'a>)(payTable: Map<'a, Map<int, int>>)(snapshot: 'a[][]) =
-        countGems gems snapshot |> calcGemsMul payTable
-    
-    type LineWin<'a> = int * 'a * int * int
+    let internal calcGemsMul<'a when 'a: comparison>
+        (payTable: Map<'a, Map<int, int>>)
+        (result: Map<'a, list<Pos>>)
+        : TotalGemWinResult<'a> =
+        let folder (tm, ls) gem pos =
+            let c = List.length pos
+            let mul = Core.getNestedMultiplier gem c payTable
 
+            match mul with
+            | Some(m) -> (tm + m, (gem, pos, m) :: ls)
+            | None -> (tm, ls)
+
+        Map.fold folder (0, []) result
+
+    let countGemsResult<'a when 'a: comparison> (gems: list<'a>) (payTable: Map<'a, Map<int, int>>) (snapshot: 'a[][]) =
+        countGems gems snapshot |> calcGemsMul payTable
+
+    type LineWin<'a> = int * 'a * int * int
+    type LineWinResult<'a> = list<LineWin<'a>>
+    type TotalLineWinResult<'a> = int * LineWinResult<'a>
+    
+    let lineWinResult<'a>(calcMul: 'a -> int -> option<int>)(lineResult:list<Core.LineResult<'a>>): TotalLineWinResult<'a> =
+        let folder(state: int * LineWinResult<'a>)(line: int)(r: Core.LineResult<'a>)=
+             let win result =
+                    monad {
+                        let! s, c, _ = result
+                        let! m = calcMul s c
+                        return (line, s, c, m)
+                    }
+
+             let t, ls = state
+             match win r with
+                | None -> state
+                | Some(_, _, _, m as w) -> (t + m), w :: ls
+        foldi folder (0, []) lineResult
+        
     let computeLineResult<'a>
         (payLines: 'a[][] -> list<list<'a>>)
         (countLine: list<list<'a>> -> list<Core.LineResult<'a>>)
         (calcMul: 'a -> int -> option<int>)
         (snapshot: 'a[][])
-        =
-        let folder (state: int * list<LineWin<'a>>) (line: int) (r: Core.LineResult<'a>) =
-            let win result =
-                monad {
-                    let! s, c, _ = result
-                    let! m = calcMul s c
-                    return (line, s, c, m)
-                }
-
-            let t, ls = state
-
-            match win r with
-            | None -> state
-            | Some(_, _, _, m as w) -> (t + m), w :: ls
-
-        snapshot |> payLines |> countLine |> (foldi folder (0, []))
+        : TotalLineWinResult<'a> =
+        snapshot |> payLines |> countLine |> lineWinResult calcMul
 
 
-    let winLineCount<'a> (lines: Map<int, list<int>>) (lineWins: list<LineWin<'a>>) : list<Collapse.LineCount> =
-        lineWins
-        |> List.map (fun (line, _, count, _) ->
-            let l = Map.find line lines
-            l, count)
+    let winIdx<'a> (lines: Map<int, list<int>>) (lineResult: LineWinResult<'a>) =
+        seq {
+            for (line, _, count, _) in lineResult do
+                let ls = Map.find line lines
+                yield! ls |> Seq.take count |> Seq.mapi (fun i j -> i, j)
+        }
+
+    type Action =
+        | Spin
+        | Cascade
+
+    type GameState =
+        { mainGame: bool
+          freeSpin: int
+          name: string
+          idxMatrix: list<list<int>>
+          snapshot: int[][]
+          lineMul: int
+          lineResult: LineWinResult<int>
+          gemsMul: int
+          gemsResult: GemWinResult<int> }

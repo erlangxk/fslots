@@ -4,6 +4,13 @@ module CollapseTests
 open Slot.Game.Prelude
 open Xunit
 
+let idxOfWinLine  (lines:seq<list<int>*int>) =
+    seq {
+       for (ls, c) in lines do  
+         yield! ls |> Seq.take c |> Seq.mapi (fun i j -> i,j) 
+    }
+
+
 [<Fact>]
 let ``test the removal of index matrix`` () = 
     
@@ -14,6 +21,7 @@ let ``test the removal of index matrix`` () =
         [6;9;10]
         [7;8;19]
     ]
+    
     let lines = [
         [ 1; 1; 1; 1; 1 ],3
         [ 0; 0; 0; 0; 0 ],2
@@ -22,7 +30,9 @@ let ``test the removal of index matrix`` () =
         [ 2; 2; 1; 1; 1 ],4
     ]
     
-    let r = Collapse.removeWinIdx matrix lines
+    let idx = idxOfWinLine lines
+    
+    let r = Collapse.removeIdx matrix idx
     
     let er = [
         []

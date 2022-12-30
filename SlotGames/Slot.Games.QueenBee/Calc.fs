@@ -49,16 +49,9 @@ let addOneWin<'T when 'T :> IMul> (win: option<'T>) (state: int * list<'T>) =
     | None -> state
     | Some(w) -> (t + w.myMul), w :: ls
 
-let computeLineResult<'a>
-    (payLines: 'a[][] -> list<list<'a>>)
-    (countLineTwice: list<list<'a>> -> list<LeftRightLineResult<'a>>)
-    (calLineWin: 'a -> int -> bool -> option<int>)
-    (snapshot: 'a[][])
-    =
-    let linesOfSymbol = payLines snapshot
-    let countAllLines = countLineTwice linesOfSymbol
 
-    let folder (state: int * list<LineWin<'a>>) (line: int) ((lr, rr): LeftRightLineResult<'a>) =
+let lineWinResult<'a>(calLineWin: 'a -> int -> bool -> option<int>)(countAllLines:list<LeftRightLineResult<'a>>) =
+     let folder (state: int * list<LineWin<'a>>) (line: int) ((lr, rr): LeftRightLineResult<'a>) =
         let cal dir result =
             monad {
                 let! s, c, subst = result
@@ -71,8 +64,15 @@ let computeLineResult<'a>
             }
 
         state |> addOneWin (cal L2R lr) |> addOneWin (cal R2L rr)
+     foldi folder (0, []) countAllLines
 
-    foldi folder (0, []) countAllLines
+let computeLineResult<'a>
+    (payLines: 'a[][] -> list<list<'a>>)
+    (countLineTwice: list<list<'a>> -> list<LeftRightLineResult<'a>>)
+    (calcLineWin: 'a -> int -> bool -> option<int>)
+    (snapshot: 'a[][])
+    =
+    snapshot |> payLines |> countLineTwice |> lineWinResult calcLineWin
 
 let computeScatterResult<'a>
     (totalLines: int)
