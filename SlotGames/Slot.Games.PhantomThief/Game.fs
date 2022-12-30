@@ -45,10 +45,11 @@ module FeatureGame =
 
         idxMatrix, ss, lineMul, lineResult, gemsMul, gemsResult, bonus
 
-    let collapse idxMatrix lineResult gemsResult reels lens = 
+    let collapse idxMatrix lineResult gemsResult bonus reels lens = 
         let idx = seq {
             yield! Common.allLineIdx Config.Line.lineMap lineResult
             yield! Common.allGemsIdx gemsResult
+            yield! Common.allBonusIdx bonus
         }
         let newIdxMatrix = Collapse.collapse idxMatrix idx lens
         let ss = Core.snapshot reels newIdxMatrix
@@ -97,8 +98,11 @@ module MainGame =
         let idxMatrix = Core.randomReelIdx lens Config.height rng
         shoot reels idxMatrix
 
-    let collapse idxMatrix lineResult reels lens =
-        let idx = Common.allLineIdx Config.Line.lineMap lineResult
+    let collapse idxMatrix lineResult bonus reels lens =
+        let idx = seq {
+           yield! Common.allLineIdx Config.Line.lineMap lineResult
+           yield! Common.allBonusIdx bonus
+        }
         let newIdxMatrix = Collapse.collapse idxMatrix idx lens
         let ss = Core.snapshot reels newIdxMatrix
         let (mul, lineResult) = computeLinResult ss
@@ -143,7 +147,7 @@ module State =
             if action = Action.Spin then
                 let spinResult = MainGame.spin reels lens rng1
                 let idxMatrix, ss, mul, lineResult, bonus = spinResult
-                let freeSpin = if bonus = 3 then 6 else 0
+                let freeSpin = if bonus.Length = 3 then 6 else 0
                 { mainGame = true
                   freeSpin = freeSpin
                   name = gameName
@@ -152,18 +156,20 @@ module State =
                   lineMul = mul
                   lineResult = lineResult
                   gemsMul = 0
-                  gemsResult = [] }
+                  gemsResult = []
+                  bonus = bonus }
             else
                 let s = Option.get state
-                let cascadeResult = MainGame.collapse s.idxMatrix s.lineResult reels lens
+                let cascadeResult = MainGame.collapse s.idxMatrix s.lineResult s.bonus reels lens
                 let idxMatrix, ss, mul, lineResult, bonus = cascadeResult
-                let freeSpin = if bonus = 3 then 6 else 0
+                let freeSpin = if bonus.Length = 3 then 6 else 0
 
                 { s with
                     snapshot = ss
                     idxMatrix = idxMatrix
                     lineMul = mul
                     lineResult = lineResult
+                    bonus = bonus
                     freeSpin = s.freeSpin + freeSpin }
 
         else
@@ -173,7 +179,7 @@ module State =
                 let spinResult = FeatureGame.spin reels lens rng1
                 let idxMatrix, ss, lineMul, lineResult, gemsMul, gemsResult, bonus = spinResult
                 let freeSpin =
-                    if bonus = 3 then
+                    if bonus.Length = 3 then
                         Common.randomFreeGame rng2
                     else
                         0
@@ -185,13 +191,14 @@ module State =
                   lineMul = lineMul
                   lineResult = lineResult
                   gemsMul = gemsMul
-                  gemsResult = gemsResult }
+                  gemsResult = gemsResult
+                  bonus = bonus}
             else
                 let s = Option.get state
-                let cascadeResult = FeatureGame.collapse s.idxMatrix s.lineResult s.gemsResult reels lens
+                let cascadeResult = FeatureGame.collapse s.idxMatrix s.lineResult s.gemsResult s.bonus reels lens
                 let idxMatrix, ss, lineMul, lineResult, gemsMul, gemsResult, bonus = cascadeResult
                 let freeSpin =
-                    if bonus = 3 then
+                    if bonus.Length = 3 then
                         Common.randomFreeGame rng2
                     else
                         0
@@ -202,4 +209,5 @@ module State =
                     lineResult = lineResult
                     freeSpin = s.freeSpin + freeSpin
                     gemsMul = gemsMul
-                    gemsResult = gemsResult }
+                    gemsResult = gemsResult
+                    bonus = bonus }

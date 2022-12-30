@@ -16,11 +16,19 @@ module Common =
         elif r <= 0.6500 then 3
         else 4
 
-    let countBonus<'a when 'a: equality> (isBonus: 'a -> bool) (snapshot: 'a[][]) =
-        snapshot |> Seq.fold (fun count arr -> count + Core.countSymbol isBonus arr) 0
-
     type Idx = int * int
+    
+    let countBonus<'a when 'a: equality> (isBonus: 'a -> bool) (snapshot: 'a[][]) =
+        let all =
+            seq {
+                for i in 0 .. snapshot.Length - 1 do
+                    for j in 0 .. snapshot[i].Length - 1 do
+                        (i, j, snapshot[i][j])
+            }
+        all |> Seq.filter (fun (_,_,e) -> isBonus e) |> Seq.map (fun (i,j,_) -> i,j) |> Seq.toList
 
+    let allBonusIdx(idx:list<int*int>) = if(idx.Length >=3) then idx else []
+    
     let internal countGems<'a when 'a: comparison> (gems: list<'a>) (snapshot: 'a[][]) =
         let all =
             seq {
@@ -47,6 +55,8 @@ module Common =
             for (_, ls, _) in gemsResult do
                 yield! ls
         }
+        
+   
 
     let internal calcGemsMul<'a when 'a: comparison>
         (payTable: Map<'a, Map<int, int>>)
@@ -113,4 +123,5 @@ module Common =
           lineMul: int
           lineResult: LineWinResult<int>
           gemsMul: int
-          gemsResult: GemWinResult<int> }
+          gemsResult: GemWinResult<int>
+          bonus: list<int*int> }

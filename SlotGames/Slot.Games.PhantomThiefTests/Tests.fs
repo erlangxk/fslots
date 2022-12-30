@@ -65,11 +65,11 @@ let ``calc gems multiplier found no multiplier`` () =
 
 [<Fact>]
 let ``count bonus`` () =
-    let r = Common.countBonus (fun x -> x = 3) ss
-    Assert.Equal(2, r)
+    let r0 = Common.countBonus (fun x -> x = 3) ss
+    Assert.Equal(2, Seq.length r0)
 
-    let r = Common.countBonus (fun x -> x = 4) ss
-    Assert.Equal(4, r)
+    let r1 = Common.countBonus (fun x -> x = 4) ss
+    Assert.Equal(4, Seq.length r1)
 
 
 [<Fact>]
@@ -130,21 +130,24 @@ let fullCycleMainGame game reels lens =
      spin <- spin + 1
      let slices = Test.genSlice idx lens Config.height
      let idxMatrix, _, mul, lineResult, bonus =  MainGame.shoot reels slices
-     if bonus =3 then totalFreeSpin <- totalFreeSpin + 6
+     if bonus.Length =3 then totalFreeSpin <- totalFreeSpin + 6
      totalSpinMul <- totalSpinMul + mul
 
-     if(mul >0 ) then 
+     if(mul >0 || bonus.Length >=3 ) then 
          let mutable run = true
          let mutable runningIdxMatrix = idxMatrix
          let mutable runningLineResult = lineResult
+         let mutable runningBonus = bonus
+       
          while run do
             collapse <- collapse + 1
-            let r = MainGame.collapse runningIdxMatrix runningLineResult reels lens
+            let r = MainGame.collapse runningIdxMatrix runningLineResult runningBonus reels lens
             let idxMatrix, ss, mul, lineResult, bonus = r
-            if bonus =3 then totalFreeSpin <- totalFreeSpin + 6
-            if mul > 0 then  
+            if bonus.Length =3 then totalFreeSpin <- totalFreeSpin + 6
+            if mul > 0 || bonus.Length>=3 then  
                 runningIdxMatrix <- idxMatrix
                 runningLineResult <- lineResult
+                runningBonus <- bonus
                 totalCollapseMul <- totalCollapseMul + mul
             else
                 run <- false
@@ -172,7 +175,7 @@ let ``test fully cycle of MainGameA`` () =
    fullCycleMainGame "MainGameA" reels lens
      
       
-[<Fact>]
+//[<Fact>]
 
 let ``test fully cycle of MainGameB`` () =
    let reels = Config.MainGame.MainB
