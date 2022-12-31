@@ -166,3 +166,14 @@ let countSymbolTest () =
     Assert.Equal(3, count [| 2; 2; 2 |])
     Assert.Equal(0, count [| 0; 1; 3 |])
     Assert.Equal(0, count [||])
+
+[<Fact>]
+let lineupTest () =
+    let arr = [|
+        [|2;3;4|]
+        [|5;6;7|]
+    |]
+    
+    let r = Core.lineup arr
+    let er = [(0,0,2);(0,1,3);(0,2,4);(1,0,5);(1,1,6);(1,2,7)]
+    Assert.Equal<list<int*int*int>>(er, r)

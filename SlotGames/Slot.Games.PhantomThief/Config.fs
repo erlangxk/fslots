@@ -1,8 +1,6 @@
 module Slot.Games.PhantomThief.Config
 open Slot.Game.Prelude
 
-let width,height = 5,3
-
 module Line =
     let allLines =
         [ [ 1; 1; 1; 1; 1 ]

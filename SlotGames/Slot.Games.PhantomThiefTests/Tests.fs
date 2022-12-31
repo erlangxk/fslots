@@ -5,8 +5,10 @@ open Slot.Game.Prelude
 open Xunit
 open Slot.Games.PhantomThief
 
-let ss =
+let snapshot =
     [| [| 2; 4; 7 |]; [| 3; 5; 2 |]; [| 9; 4; 0 |]; [| 4; 9; 2 |]; [| 3; 4; 1 |] |]
+
+let ss  = Core.lineup snapshot
 
 [<Fact>]
 let ``count gems 1`` () =
@@ -92,7 +94,6 @@ let ``concat gem idx `` () =
 
 [<Fact>]
 let ``concat line idx`` () =
-    //int * 'a * int * int
     let lineWin =
         [ 0, "a", 3, 1; 1, "b", 2, 0; 2, "c", 1, 4; 3, "e", 3, 2; 4, "f", 4, 3 ]
 
@@ -129,7 +130,7 @@ let fullCycleMainGame game reels lens =
    
    let spinOnce idx =
      spin <- spin + 1
-     let slices = Test.genSlice idx lens Config.height
+     let slices = Test.genSlice idx lens Game.height
      let idxMatrix, _, mul, lineResult, bonus =  MainGame.shoot reels slices
      if bonus.Length =3 then totalFreeSpin <- totalFreeSpin + 6
      totalSpinMul <- totalSpinMul + mul
@@ -175,7 +176,7 @@ let ``test fully cycle of MainGameA`` () =
    fullCycleMainGame "MainGameA" reels lens
      
       
-[<Fact>]
+//[<Fact>]
 let ``test fully cycle of MainGameB`` () =
    let reels = Config.MainGame.MainB
    let lens = Config.MainGame.lensMainB

@@ -22,6 +22,13 @@ module Core =
     let internal cherryPick<'a> (reel: Reel<'a>) (idx: list<int>) = idx |>> Array.get reel
 
     type Snapshot<'a> = 'a[][]
+    
+    let lineup<'a> (ss: Snapshot<'a>) =
+        seq {
+            for i in 0 .. ss.Length - 1 do
+                for j in 0 .. ss[i].Length - 1 do
+                    (i, j, ss[i][j])
+        } |> Seq.toList
 
     let snapshot (reels: Reel<'a> list) (reelIdx: list<list<int>>) : Snapshot<'a> =
         let oneReel reel idx = (cherryPick reel idx) |> List.toArray
