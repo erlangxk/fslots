@@ -13,14 +13,14 @@ module MainGame =
     let mainCountAllLine =
         Core.countConsecutiveSymbols (fun x -> x = Config.MainGame.Wild) |> List.map
 
-    let computeLinResult =
+    let computeLineResult =
         Common.computeLineResult Game.phantomThiefPayLines mainCountAllLine calcLineWin
 
     let chooseGame (rng: unit -> float) =
         let chance = rng ()
         if chance <= 0.048 then MainGameA else MainGameB
 
-    let countBonus (sequence: list<int*int*int>) =
+    let countBonus (sequence: list<int * int * int>) =
         Common.countBonus (fun x -> x = Config.MainGame.Bonus) sequence
 
     let getReel (name: string) =
@@ -31,7 +31,7 @@ module MainGame =
 
     let shoot reels idxMatrix =
         let ss = Core.snapshot reels idxMatrix
-        let (mul, lineResult) = computeLinResult ss
+        let mul, lineResult = computeLineResult ss
         let bonus = countBonus (Core.lineup ss)
         idxMatrix, ss, mul, lineResult, bonus
 
@@ -48,7 +48,7 @@ module MainGame =
 
         let newIdxMatrix = Collapse.collapse idxMatrix idx lens
         let ss = Core.snapshot reels newIdxMatrix
-        let (mul, lineResult) = computeLinResult ss
+        let mul, lineResult = computeLineResult ss
         let bonus = countBonus (Core.lineup ss)
         newIdxMatrix, ss, mul, lineResult, bonus
 
