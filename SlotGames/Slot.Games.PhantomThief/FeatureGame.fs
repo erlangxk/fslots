@@ -34,20 +34,24 @@ module FeatureGame =
     let computeLineResult =
         Common.computeLineResult Game.phantomThiefPayLines featureCountAllLine calcLineWin
 
+    let computeGemsResult =
+        Common.countGemsResult Config.FeatureGame.allGems Config.FeatureGame.gemsPayTable
+
     let countBonus (sequence: list<int * int * int>) =
         Common.countBonus (fun x -> x = Config.FeatureGame.Bonus) sequence
 
-    let spin reels lens rng =
-        let idxMatrix = Core.randomReelIdx lens Game.height rng
+    let shoot reels idxMatrix =
         let ss = Core.snapshot reels idxMatrix
         let lineMul, lineResult = computeLineResult ss
         let sequence = Core.lineup ss
         let bonus = countBonus sequence
-
-        let (gemsMul, gemsResult) =
-            Common.countGemsResult Config.FeatureGame.allGems Config.FeatureGame.gemsPayTable sequence
+        let gemsMul, gemsResult = computeGemsResult sequence
 
         idxMatrix, ss, lineMul, lineResult, gemsMul, gemsResult, bonus
+
+    let spin reels lens rng =
+        let idxMatrix = Core.randomReelIdx lens Game.height rng
+        shoot reels idxMatrix
 
     let collapse idxMatrix lineResult gemsResult bonus reels lens =
         let idx =
@@ -62,8 +66,6 @@ module FeatureGame =
         let lineMul, lineResult = computeLineResult ss
         let sequence = Core.lineup ss
         let bonus = countBonus sequence
-
-        let gemsMul, gemsResult =
-            Common.countGemsResult Config.FeatureGame.allGems Config.FeatureGame.gemsPayTable sequence
+        let gemsMul, gemsResult = computeGemsResult sequence
 
         newIdxMatrix, ss, lineMul, lineResult, gemsMul, gemsResult, bonus
