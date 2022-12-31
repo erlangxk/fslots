@@ -19,7 +19,7 @@ module Common =
         }
         |> Seq.toList
 
-    let allBonusIdx (idx: list<int * int>) = if (idx.Length >= 3) then idx else []
+    let allBonusIdx (idx: list<int * int>) = if (idx.Length < 3) then [] else idx
      
     let internal countGems<'a when 'a: comparison> (gems: list<'a>) (sequence: list<int*int*'a>) =
         let folder (state: Map<'a, list<Idx>>) (i, j, e) =
@@ -36,18 +36,17 @@ module Common =
     type TotalGemWinResult<'a> = int * GemWinResult<'a>
 
     let allGemsIdx (gemsResult: GemWinResult<'a>) =
-        seq {
-            for (_, ls, _) in gemsResult do
-                yield! ls
-        }
-
+        gemsResult |> Seq.collect (fun (_,ls,_) -> ls)
+ 
     let internal calcGemsMul<'a when 'a: comparison>
         (payTable: Map<'a, Map<int, int>>)
         (result: Map<'a, list<Idx>>)
         : TotalGemWinResult<'a> =
         let folder (tm, ls) gem pos =
             let c = List.length pos
-            let mul = Core.getNestedMultiplier gem c payTable
+            
+            let z = if c>5 then 5 else c
+            let mul = Core.getNestedMultiplier gem z payTable
 
             match mul with
             | Some(m) -> (tm + m, (gem, pos, m) :: ls)

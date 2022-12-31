@@ -60,12 +60,5 @@ module FeatureGame =
                 yield! Common.allGemsIdx gemsResult
                 yield! Common.allBonusIdx bonus
             }
-
         let newIdxMatrix = Collapse.collapse idxMatrix idx lens
-        let ss = Core.snapshot reels newIdxMatrix
-        let lineMul, lineResult = computeLineResult ss
-        let sequence = Core.lineup ss
-        let bonus = countBonus sequence
-        let gemsMul, gemsResult = computeGemsResult sequence
-
-        newIdxMatrix, ss, lineMul, lineResult, gemsMul, gemsResult, bonus
+        shoot reels newIdxMatrix

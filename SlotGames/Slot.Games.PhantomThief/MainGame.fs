@@ -45,11 +45,7 @@ module MainGame =
                 yield! Common.allLineIdx Config.Line.lineMap lineResult
                 yield! Common.allBonusIdx bonus
             }
-
         let newIdxMatrix = Collapse.collapse idxMatrix idx lens
-        let ss = Core.snapshot reels newIdxMatrix
-        let mul, lineResult = computeLineResult ss
-        let bonus = countBonus (Core.lineup ss)
-        newIdxMatrix, ss, mul, lineResult, bonus
+        shoot reels newIdxMatrix
 
-    let freeSpin (bonusNum: int) = if bonusNum = 3 then 6 else 0
+    let freeSpin (bonusNum: int) = if bonusNum < 3 then 0 else 6

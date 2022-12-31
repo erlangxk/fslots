@@ -1,10 +1,12 @@
 module Tests
 
 open System
+open System.Collections.Generic
 open System.Diagnostics
 open Slot.Game.Prelude
 open Xunit
 open Slot.Games.PhantomThief
+open System.Linq
 
 let snapshot =
     [| [| 2; 4; 7 |]; [| 3; 5; 2 |]; [| 9; 4; 0 |]; [| 4; 9; 2 |]; [| 3; 4; 1 |] |]
@@ -129,6 +131,8 @@ let fullCycleMainGame game reels lens =
    let mutable totalCollapseMul = 0
    let mutable spin = 0
    let mutable collapse = 0
+   let dict = Dictionary<int,int>()
+
    
    let spinOnce idx =
      spin <- spin + 1
@@ -143,7 +147,7 @@ let fullCycleMainGame game reels lens =
          let mutable runningIdxMatrix = idxMatrix
          let mutable runningLineResult = lineResult
          let mutable runningBonus = bonus
-       
+         let mutable loop = 1
          while run do
             collapse <- collapse + 1
             let r = MainGame.collapse runningIdxMatrix runningLineResult runningBonus reels lens
@@ -151,11 +155,14 @@ let fullCycleMainGame game reels lens =
             let freeSpin = MainGame.freeSpin bonus.Length
             totalFreeSpin <- totalFreeSpin + freeSpin
             totalCollapseMul <- totalCollapseMul + mul
-            if mul > 0 || freeSpin > 0 then  
+            if mul > 0 || freeSpin > 0 then
+                loop <- loop+1
                 runningIdxMatrix <- idxMatrix
                 runningLineResult <- lineResult
                 runningBonus <- bonus
             else
+                let count = dict.GetValueOrDefault(loop)
+                dict[loop] <- (count+1)
                 run <- false
    stopWatch.Start()
    let startIdx = Test.genStartIdx lens
@@ -165,6 +172,10 @@ let fullCycleMainGame game reels lens =
    let totalCost = spin * Config.Line.totalLines
    printfn "*************************"
    let ts = stopWatch.Elapsed
+   printfn $"@@@@collapse statistics@@@"
+   for kv in dict  do
+       printfn $"collapse {kv.Key}:{kv.Value}"
+   printfn "@@@@@@@@@@@@@@@@@@@@@@@@@@"
    printfn $"time elapsed {ts.TotalSeconds}"
    printfn $"game:{game}"
    printfn $"totalWin:{totalWin}"
@@ -182,13 +193,19 @@ let fullCycleMainGame game reels lens =
 let fullCycleFeatureGame game reels lens =
    let stopWatch = Stopwatch()
    let random = System.Random()
-   let mutable totalFreeSpin = 0
-   let mutable totalLineMul =0
-   let mutable totalGemsMul = 0
+   let mutable totalFreeOfSpin = 0
+   let mutable totalFreeOfCollapse  =0
+   
+   let mutable spin = 0
+   let mutable totalSpinLineMul =0
+   let mutable totalSpinGemsMul = 0
+   
    let mutable totalCollapseLineMul = 0
    let mutable totalCollapseGemsMul = 0
-   let mutable spin = 0
+   
    let mutable collapse = 0
+   
+   let dict = Dictionary<int,int>()
    
    let rng2  = random.NextDouble 
    
@@ -199,9 +216,9 @@ let fullCycleFeatureGame game reels lens =
      
      let mul = lineMul + gemsMul * Config.Line.totalLines
      let freeSpin = FeatureGame.freeSpin bonus.Length rng2
-     totalFreeSpin <- totalFreeSpin + freeSpin
-     totalLineMul <- totalLineMul + lineMul
-     totalGemsMul <- totalGemsMul + gemsMul * Config.Line.totalLines
+     totalFreeOfSpin <- totalFreeOfSpin + freeSpin
+     totalSpinLineMul <- totalSpinLineMul + lineMul
+     totalSpinGemsMul <- totalSpinGemsMul + gemsMul * Config.Line.totalLines
      
      if(mul >0 || freeSpin > 0 ) then 
          let mutable run = true
@@ -209,53 +226,63 @@ let fullCycleFeatureGame game reels lens =
          let mutable runningLineResult = lineResult
          let mutable runningGemsResult = gemsResult
          let mutable runningBonus = bonus
-       
-         while run do
+         let mutable loop = 1
+         while run do   
             collapse <- collapse + 1
             let r = FeatureGame.collapse runningIdxMatrix runningLineResult runningGemsResult runningBonus reels lens
             let idxMatrix, _, lineMul, lineResult, gemsMul, gemsResult, bonus = r
-            
             let mul = lineMul + gemsMul * Config.Line.totalLines
             let freeSpin = FeatureGame.freeSpin bonus.Length rng2
-            totalFreeSpin <- totalFreeSpin + freeSpin
+            totalFreeOfCollapse <- totalFreeOfCollapse + freeSpin
             totalCollapseLineMul <- totalCollapseLineMul + lineMul
             totalCollapseGemsMul <- totalCollapseGemsMul + gemsMul * Config.Line.totalLines
 
-            if mul > 0 || freeSpin > 0 then  
+            if mul > 0 || freeSpin>0 then
+                loop <- loop + 1
                 runningIdxMatrix <- idxMatrix
                 runningLineResult <- lineResult
-                runningBonus <- bonus
                 runningGemsResult <- gemsResult
+                runningBonus <- bonus
             else
+                let count = dict.GetValueOrDefault(loop)
+                dict[loop]<-(count+1)
                 run <- false
    
    stopWatch.Start()
    let startIdx = Test.genStartIdx lens
    startIdx |> Seq.iter spinOnce
    stopWatch.Stop()
-   let totalWin = totalCollapseLineMul + totalLineMul + totalCollapseGemsMul + totalGemsMul
-   let totalCost = spin * Config.Line.totalLines
    printfn "*************************"
    let ts = stopWatch.Elapsed
+   printfn $"@@@@collapse statistics@@@"
+   for kv in dict  do
+       printfn $"collapse {kv.Key}:{kv.Value}"
+   printfn "@@@@@@@@@@@@@@@@@@@@@@@@@@" 
    printfn $"time elapsed {ts.TotalSeconds}"
    printfn $"game:{game}"
-   printfn $"totalWin:{totalWin}"
-   printfn $"totalFreeSpin:{totalFreeSpin}"
-
+  
    printfn ""
    printfn $"totalSpin:{spin}"
-   printfn $"totalLineMul:{totalLineMul}"
-   printfn $"totalGemsMul:{totalGemsMul}"
+   printfn $"totalSpinLineMul:{totalSpinLineMul}"
+   printfn $"totalSpinGemsMul:{totalSpinGemsMul}"
+   printfn $"totalFreeOfSpin:{totalFreeOfSpin}"
+
    printfn ""
    printfn $"totalCollapse:{collapse}"
    printfn $"totalCollapseLineMul:{totalCollapseLineMul}"
    printfn $"totalCollapseGemsMul:{totalCollapseGemsMul}"
-   
+   printfn $"totalFreeOfCollapse:{totalFreeOfCollapse}"
+
+   let totalCost = spin * Config.Line.totalLines
+   let totalWin = totalCollapseLineMul  + totalCollapseGemsMul + totalSpinLineMul+ totalSpinGemsMul
+
    printfn ""
-   printfn $"non Tum LINE RTP  = {double totalLineMul / double totalCost}"
-   printfn $"non Tum Gems RTP  = {double totalGemsMul / double totalCost}"
+   printfn $"non Tum LINE RTP  = {double totalSpinLineMul / double totalCost}"
+   printfn $"non Tum Gems RTP  = {double totalSpinGemsMul / double totalCost}"
    printfn $"Tum LINE RTP  = {double totalCollapseLineMul / double totalCost}"
    printfn $"Tum Gems RTP  = {double totalCollapseGemsMul / double totalCost}"
+   
+   printfn $"totalWin:{totalWin}/totalCost:{totalCost}"
    printfn $"full cycle's RTP = {double totalWin / double totalCost}"  
 
 
