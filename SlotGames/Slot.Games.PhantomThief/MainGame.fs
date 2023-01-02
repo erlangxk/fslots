@@ -53,24 +53,24 @@ module MainGame =
 
 
     let spinWithCollapse reels lens idx =
-        let rec loopCollapse collapseCount freeSpinCount mul oldIdxMatrix oldLineResult oldBonus =
-            let idxMatrix2, _, mul2, lineResult2, bonus2 =
+        let rec loopCollapse accCollapse accFreeSpin accMul oldIdxMatrix oldLineResult oldBonus =
+            let idxMatrix, _, mul, lineResult, bonus =
                 collapse oldIdxMatrix oldLineResult oldBonus reels lens
 
-            let fsc = freeSpin bonus2.Length
+            let fs = freeSpin bonus.Length
 
-            if (mul2 > 0 || fsc > 0) then
-                loopCollapse (collapseCount + 1) (freeSpinCount + fsc) (mul + mul2) idxMatrix2 lineResult2 bonus2
+            if (mul > 0 || fs > 0) then
+                loopCollapse (accCollapse + 1) (accFreeSpin + fs) (accMul + mul) idxMatrix lineResult bonus
             else
-                collapseCount, freeSpinCount, mul
+                accCollapse, accFreeSpin, accMul
 
-        let idxMatrix, _, mul, lineResult, bonus = shoot reels idx
-        let fsc1 = freeSpin bonus.Length
+        let idxMatrix, _, spinLineMul, lineResult, bonus = shoot reels idx
+        let spinFs = freeSpin bonus.Length
 
-        let (collapse, fsc2, collapseMul) =
-            if (mul > 0 || fsc1 > 0) then
+        let (collapse, collapseFs, collapseLineMul) =
+            if (spinLineMul > 0 || spinFs > 0) then
                 loopCollapse 1 0 0 idxMatrix lineResult bonus
             else
                 (0, 0, 0)
 
-        fsc1, mul, fsc2, collapseMul, collapse
+        spinFs, spinLineMul, collapseFs, collapseLineMul, collapse

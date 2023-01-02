@@ -60,5 +60,46 @@ module FeatureGame =
                 yield! Common.allGemsIdx gemsResult
                 yield! Common.allBonusIdx bonus
             }
+
         let newIdxMatrix = Collapse.collapse idxMatrix idx lens
         shoot reels newIdxMatrix
+
+    let spinWithCollapse reels lens rng idx=
+        let rec loopCollapse
+            accCollapse
+            accFreeSpin
+            accLineMul
+            accGemsMul
+            oldIdxMatrix
+            oldLineResult
+            oldGemsResult
+            oldBonus
+            =
+            let idxMatrix, _, lineMul, lineResult, gemsMul, gemsResult, bonus =
+                collapse oldIdxMatrix oldLineResult oldGemsResult oldBonus reels lens
+
+            let fs = freeSpin bonus.Length rng
+
+            if ((lineMul + gemsMul) > 0 || fs > 0) then
+                loopCollapse
+                    (accCollapse + 1)
+                    (accFreeSpin + fs)
+                    (accLineMul + lineMul)
+                    (accGemsMul + gemsMul)
+                    idxMatrix
+                    lineResult
+                    gemsResult
+                    bonus
+            else
+                accCollapse, accFreeSpin, accLineMul, accGemsMul
+
+        let idxMatrix, _, spinLineMul, lineResult, spinGemsMul, gemsResult, bonus = shoot reels idx
+        let spinFs = freeSpin bonus.Length rng
+
+        let (collapseCount, collapseFs, collapseLineMul, collapseGemsMul) =
+            if (spinLineMul + spinGemsMul > 0 || spinFs > 0) then
+                loopCollapse 1 0 0 0 idxMatrix lineResult gemsResult bonus
+            else
+                (0, 0, 0, 0)
+
+        spinFs, spinLineMul, spinGemsMul, collapseFs, collapseLineMul, collapseGemsMul, collapseCount
