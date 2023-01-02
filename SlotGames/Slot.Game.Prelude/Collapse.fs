@@ -11,8 +11,8 @@ let internal removeIdx(matrix:list<list<int>>)(idxToRemove:seq<int*int>)=
     let arrMatrix = matrix |> List.map List.toArray |> List.toArray 
     idxToRemove |> Seq.iter (fun (i,j)-> arrMatrix[i][j] <- TAG_REMOVE)
     arrMatrix
-    |> Seq.map (fun arr-> Seq.filter (fun i-> i <> TAG_REMOVE) arr |> Seq.toList)
-    |> Seq.toList
+    |> Array.map (fun arr-> Array.filter (fun i-> i <> TAG_REMOVE) arr |> Array.toList)
+    |> Array.toList
 
 let internal reloadReel (ol:list<int>) (nl:list<int>) (l:int) =
         let next = ol.Head
