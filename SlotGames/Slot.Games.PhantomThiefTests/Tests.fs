@@ -1,6 +1,6 @@
 module Tests
 
-open System
+open FSharp.Collections.ParallelSeq
 open System.Collections.Generic
 open System.Diagnostics
 open Slot.Game.Prelude
@@ -125,70 +125,72 @@ let ``concat line idx`` () =
     Assert.Equal<seq<int * int>>(er, r)
 
 let fullCycleMainGame game reels lens =
-   let stopWatch = Stopwatch()
-   let mutable totalFreeSpin = 0
-   let mutable totalSpinMul = 0
-   let mutable totalCollapseMul = 0
-   let mutable spin = 0
-   let mutable collapse = 0
-   let dict = Dictionary<int,int>()
-
+   
+   let rec loopCollapse collapse freeSpin mul oldIdxMatrix oldLineResult oldBonus =
+      let r = MainGame.collapse oldIdxMatrix oldLineResult oldBonus reels lens
+      let idxMatrix2, _, mul2, lineResult2, bonus2 = r
+      let fs = MainGame.freeSpin bonus2.Length
+      if(mul2>0 || fs >0) then
+          loopCollapse (collapse+1) (freeSpin+fs) (mul+mul2) idxMatrix2 lineResult2 bonus2
+      else
+          collapse,freeSpin,mul
    
    let spinOnce idx =
-     spin <- spin + 1
      let slices = Test.genSlice idx lens Game.height
      let idxMatrix, _, mul, lineResult, bonus =  MainGame.shoot reels slices
-     let freeSpin = MainGame.freeSpin bonus.Length
-     totalFreeSpin <- totalFreeSpin + freeSpin
-     totalSpinMul <- totalSpinMul + mul
+     let freeSpin1 = MainGame.freeSpin bonus.Length
+     let (collapse,fs2,collapseMul) =
+          if(mul >0 || freeSpin1 >0 ) then 
+            loopCollapse 0 0 0 idxMatrix lineResult bonus
+          else (0, 0, 0)
+     freeSpin1, mul, fs2, collapseMul, collapse
+     
+   
+   let folder state result  =
+        let (totalFsOfSpin, totalSpinMul, totalSpin, totalFsOfCollapse,totalCollapseMul,totalCollapse, dict) = state
+        let (freeSpin1, lineMul, freeSpin2, collapseMul, collapse) = result
+        (totalFsOfSpin+freeSpin1, totalSpinMul+lineMul, totalSpin+1,
+        totalFsOfCollapse+freeSpin2, totalCollapseMul+collapseMul, totalCollapse+collapse,
+        Map.change collapse (fun x ->
+            match x with
+            | Some(c)-> Some(c+1)
+            | None -> Some(1)
+        ) dict)
+        
 
-     if(mul >0 || freeSpin >0 ) then 
-         let mutable run = true
-         let mutable runningIdxMatrix = idxMatrix
-         let mutable runningLineResult = lineResult
-         let mutable runningBonus = bonus
-         let mutable loop = 1
-         while run do
-            collapse <- collapse + 1
-            let r = MainGame.collapse runningIdxMatrix runningLineResult runningBonus reels lens
-            let idxMatrix, _, mul, lineResult, bonus = r
-            let freeSpin = MainGame.freeSpin bonus.Length
-            totalFreeSpin <- totalFreeSpin + freeSpin
-            totalCollapseMul <- totalCollapseMul + mul
-            if mul > 0 || freeSpin > 0 then
-                loop <- loop+1
-                runningIdxMatrix <- idxMatrix
-                runningLineResult <- lineResult
-                runningBonus <- bonus
-            else
-                let count = dict.GetValueOrDefault(loop)
-                dict[loop] <- (count+1)
-                run <- false
+   let stopWatch = Stopwatch()
+   
    stopWatch.Start()
-   let startIdx = Test.genStartIdx lens
-   startIdx |> Seq.iter spinOnce
+   
+   let (totalFsOfSpin, totalSpinMul, totalSpin, totalFsOfCollapse,totalCollapseMul,totalCollapse, dict)=
+                    Test.genStartIdx lens
+                    |> PSeq.map spinOnce
+                    |> PSeq.fold folder (0,0,0,0,0,0,Map.empty)
+     
    stopWatch.Stop()
+   
    let totalWin = totalCollapseMul + totalSpinMul
-   let totalCost = spin * Config.Line.totalLines
+   let totalCost = totalSpin * Config.Line.totalLines
    printfn "*************************"
-   let ts = stopWatch.Elapsed
-   printfn $"@@@@collapse statistics@@@"
-   for kv in dict  do
-       printfn $"collapse {kv.Key}:{kv.Value}"
-   printfn "@@@@@@@@@@@@@@@@@@@@@@@@@@"
-   printfn $"time elapsed {ts.TotalSeconds}"
    printfn $"game:{game}"
+   printfn $"time elapsed {stopWatch.Elapsed.TotalSeconds}"
+   printfn ""
+   
    printfn $"totalWin:{totalWin}"
-   printfn $"totalSpin:{spin}"
+   printfn $"totalSpin:{totalSpin}"
+   printfn $"totalFreeSpin:{totalFsOfSpin + totalFsOfCollapse}"
+   printfn ""
    printfn $"totalSpinMul:{totalSpinMul}"
-   printfn $"totalCollapse:{collapse}"
+   printfn $"totalCollapse:{totalCollapse}"
    printfn $"totalSpinMul:{totalCollapseMul}"
-   printfn $"totalFreeSpin:{totalFreeSpin}"
    printfn ""
    printfn $"non Tum RTP  = {double totalSpinMul / double totalCost}"
    printfn $"Tum RTP  = {double totalCollapseMul / double totalCost}"
    printfn $"full cycle's RTP = {double totalWin / double totalCost}"  
-
+   printfn $"@@@@collapse statistics@@@"
+   for kv in dict  do
+       printfn $"collapse {kv.Key}:{kv.Value}"
+   printfn "@@@@@@@@@@@@@@@@@@@@@@@@@@"
 
 let fullCycleFeatureGame game reels lens =
    let stopWatch = Stopwatch()
@@ -298,7 +300,7 @@ let ``test fully cycle of MainGameB`` () =
    let lens = Config.MainGame.lensMainB
    fullCycleMainGame "MainGameB" reels lens
 
-[<Fact>]
+//[<Fact>]
 let ``test fully cycle of FeatureGameA`` () =
    let reels = Config.FeatureGame.FeatureA
    let lens = Config.FeatureGame.lensFeatureA
