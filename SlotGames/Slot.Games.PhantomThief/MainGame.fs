@@ -45,7 +45,32 @@ module MainGame =
                 yield! Common.allLineIdx Config.Line.lineMap lineResult
                 yield! Common.allBonusIdx bonus
             }
+
         let newIdxMatrix = Collapse.collapse idxMatrix idx lens
         shoot reels newIdxMatrix
 
     let freeSpin (bonusNum: int) = if bonusNum < 3 then 0 else 6
+
+
+    let spinWithCollapse reels lens idx =
+        let rec loopCollapse collapseCount freeSpinCount mul oldIdxMatrix oldLineResult oldBonus =
+            let idxMatrix2, _, mul2, lineResult2, bonus2 =
+                collapse oldIdxMatrix oldLineResult oldBonus reels lens
+
+            let fsc = freeSpin bonus2.Length
+
+            if (mul2 > 0 || fsc > 0) then
+                loopCollapse (collapseCount + 1) (freeSpinCount + fsc) (mul + mul2) idxMatrix2 lineResult2 bonus2
+            else
+                collapseCount, freeSpinCount, mul
+
+        let idxMatrix, _, mul, lineResult, bonus = shoot reels idx
+        let fsc1 = freeSpin bonus.Length
+
+        let (collapse, fsc2, collapseMul) =
+            if (mul > 0 || fsc1 > 0) then
+                loopCollapse 1 0 0 idxMatrix lineResult bonus
+            else
+                (0, 0, 0)
+
+        fsc1, mul, fsc2, collapseMul, collapse

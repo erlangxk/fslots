@@ -125,27 +125,7 @@ let ``concat line idx`` () =
     Assert.Equal<seq<int * int>>(er, r)
 
 let fullCycleMainGame game reels lens =
-   
-   let rec loopCollapse collapse freeSpin mul oldIdxMatrix oldLineResult oldBonus =
-      let r = MainGame.collapse oldIdxMatrix oldLineResult oldBonus reels lens
-      let idxMatrix2, _, mul2, lineResult2, bonus2 = r
-      let fs = MainGame.freeSpin bonus2.Length
-      if(mul2>0 || fs >0) then
-          loopCollapse (collapse+1) (freeSpin+fs) (mul+mul2) idxMatrix2 lineResult2 bonus2
-      else
-          collapse,freeSpin,mul
-   
-   let spinOnce idx =
-     let slices = Test.genSlice idx lens Game.height
-     let idxMatrix, _, mul, lineResult, bonus =  MainGame.shoot reels slices
-     let freeSpin1 = MainGame.freeSpin bonus.Length
-     let (collapse,fs2,collapseMul) =
-          if(mul >0 || freeSpin1 >0 ) then 
-            loopCollapse 0 0 0 idxMatrix lineResult bonus
-          else (0, 0, 0)
-     freeSpin1, mul, fs2, collapseMul, collapse
      
-   
    let folder state result  =
         let (totalFsOfSpin, totalSpinMul, totalSpin, totalFsOfCollapse,totalCollapseMul,totalCollapse, dict) = state
         let (freeSpin1, lineMul, freeSpin2, collapseMul, collapse) = result
@@ -156,17 +136,18 @@ let fullCycleMainGame game reels lens =
             | Some(c)-> Some(c+1)
             | None -> Some(1)
         ) dict)
-        
-
-   let stopWatch = Stopwatch()
    
+   let idxMatrix starts = Test.genSlice starts lens Game.height
+   
+   let stopWatch = Stopwatch()  
    stopWatch.Start()
    
    let (totalFsOfSpin, totalSpinMul, totalSpin, totalFsOfCollapse,totalCollapseMul,totalCollapse, dict)=
                     Test.genStartIdx lens
-                    |> PSeq.map spinOnce
+                    |> PSeq.map idxMatrix
+                    |> PSeq.map (MainGame.spinWithCollapse reels lens)
                     |> PSeq.fold folder (0,0,0,0,0,0,Map.empty)
-     
+                    
    stopWatch.Stop()
    
    let totalWin = totalCollapseMul + totalSpinMul
