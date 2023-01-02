@@ -202,16 +202,15 @@ let fullCycleFeatureGame game reels lens =
                     
    stopWatch.Stop()
    
-   let totalCost = totalSpin * Config.Line.totalLines
-   let totalSpinGemsWin = totalSpinGemsMul * Config.Line.totalLines
-   let totalCollapseGemsWin = totalCollapseGemsMul * Config.Line.totalLines
-   let totalWin = totalCollapseLineMul + totalSpinLineMul + totalSpinGemsWin + totalCollapseGemsWin
+   let totalCost:int64= int64 totalSpin * int64 Config.Line.totalLines
+   let totalSpinGemsWin:int64 = int64 totalSpinGemsMul * int64 Config.Line.totalLines
+   let totalCollapseGemsWin:int64 = int64 totalCollapseGemsMul * int64 Config.Line.totalLines
+   let totalWin:int64 = (int64 totalCollapseLineMul) + (int64 totalSpinLineMul) +  totalSpinGemsWin + totalCollapseGemsWin
 
    printfn $"game:{game}"
    printfn "*************************"
    printfn $"time elapsed {stopWatch.Elapsed.TotalSeconds}"
   
- 
    printfn ""
    printfn $"totalSpin:{totalSpin}"
    printfn $"totalSpinLineMul:{totalSpinLineMul}"
@@ -224,7 +223,6 @@ let fullCycleFeatureGame game reels lens =
    printfn $"totalCollapseGemsWin:{totalCollapseGemsWin}"
    printfn $"totalFreeOfCollapse:{totalFsOfCollapse}"
 
-  
    printfn ""
    printfn $"non Tum LINE RTP  = {double totalSpinLineMul / double totalCost}"
    printfn $"non Tum Gems RTP  = {double totalSpinGemsWin / double totalCost}"
@@ -238,7 +236,7 @@ let fullCycleFeatureGame game reels lens =
    for kv in dict  do
        printfn $"collapse {kv.Key}:{kv.Value}"
    printfn "@@@@@@@@@@@@@@@@@@@@@@@@@@" 
-[<Fact>]
+//[<Fact>]
 let ``test fully cycle of MainGameA`` () =
    let reels = Config.MainGame.MainA
    let lens = Config.MainGame.lensMainA
@@ -256,14 +254,54 @@ let ``test fully cycle of FeatureGameA`` () =
    let lens = Config.FeatureGame.lensFeatureA
    fullCycleFeatureGame "FeatureGameA" reels lens
    
-//[<Fact>]
+[<Fact>]
 let ``test fully cycle of FeatureGameB`` () =
    let reels = Config.FeatureGame.FeatureB
    let lens = Config.FeatureGame.lensFeatureB
    fullCycleFeatureGame "FeatureGameB" reels lens      
                        
-   
-             
-         
-     
-     
+//[<Fact>]
+let ``test RTP with game state switch `` ()=
+    let random = System.Random()
+    let rng1 i  = random.Next i 
+    let rng2  = random.NextDouble
+    let mutable i = 0
+    let max = 100_000_000
+    
+    let mutable totalMainSpinMul =0L
+    let mutable totalMainCollapseMul =0L
+    
+    let mutable totalFeatureSpinMul =0L
+    let mutable totalFeatureCollapseMul =0L
+    let mutable totalFreeSpin =0
+    
+    let lc =  Config.Line.totalLines
+    let mutable gameState = None
+    let mutable totalSpin  = 1
+    while totalSpin< max do
+        let s = GameState.resume gameState rng1 rng2
+        gameState <- Some s
+        totalFreeSpin <- totalFreeSpin + s.freeSpin
+        let mul = s.lineMul + s.gemsMul * lc
+        if s.action =1 then
+            if(s.name = MainGame.MainGameA || s.name= MainGame.MainGameB) then
+                totalSpin <- totalSpin + 1
+                totalMainSpinMul <- totalMainSpinMul + int64 mul
+            else
+                totalFeatureSpinMul<- totalFeatureSpinMul + int64 mul
+        else
+            if(s.name = MainGame.MainGameA || s.name= MainGame.MainGameB) then
+                totalMainCollapseMul <- totalMainCollapseMul + int64 mul
+            else
+                totalFeatureCollapseMul<- totalFeatureCollapseMul + int64 mul
+                
+    let totalCost = int64 totalSpin *  int64 lc
+    let totalWin = totalMainSpinMul + totalMainCollapseMul + totalFeatureSpinMul + totalFeatureCollapseMul
+    
+    printfn ""
+    printfn $"Main Game RTP  = {double totalMainSpinMul / double totalCost}"
+    printfn $"Main Game Tum RTP  = {double totalMainCollapseMul / double totalCost}"
+    printfn $"Feature Game RTP  = {double totalFeatureSpinMul / double totalCost}"
+    printfn $"Feature Game Tum RTP  = {double totalFeatureCollapseMul / double totalCost}"
+    printfn $"average free spin = {double totalFreeSpin / double totalSpin}"
+    printfn $"RTP= {double totalWin / double totalCost}"
