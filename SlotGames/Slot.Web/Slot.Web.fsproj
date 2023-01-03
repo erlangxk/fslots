@@ -12,7 +12,7 @@
   
   <ItemGroup>
     <PackageReference Include="BlitzkriegSoftware.SecureRandomLibrary" Version="1.0.4" />
-    <PackageReference Include="Falco" Version="3.1.14" />
+    <PackageReference Include="Falco" Version="4.0.3" />
   </ItemGroup>
   
   <ItemGroup>
