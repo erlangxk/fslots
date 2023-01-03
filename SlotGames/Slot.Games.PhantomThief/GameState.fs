@@ -20,7 +20,7 @@ module GameState =
           gemsResult: GemWinResult<int>
           bonus: list<int * int> }
         
-        member self.shouldCollapse:bool = self.lineMul + self.gemsMul >0 || self.bonus.Length >=3
+        member self.shouldCollapse:bool = self.lineMul + self.gemsMul >0 || self.bonus.Length >= Common.BONUS_MIN_COUNTS
 
     let firstGameAction (rng: unit -> float) =
         true, MainGame.chooseGame rng, Action.Spin, None

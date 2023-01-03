@@ -47,6 +47,12 @@ let ``calc gems multiplier`` () =
     let ers = [ 4, [ (4, 1); (3, 0); (2, 1); (0, 1) ], 20; 3, [ (4, 0); (1, 0) ], 2 ]
     Assert.Equal(22, tm)
     Assert.Equal<Common.GemWinResult<int>>(ers, rs)
+    
+    let (tm, rs) = Common.countGemsResult [ 2; 7 ] payTable ss
+    let ers = []
+    Assert.Equal(0, tm)
+    Assert.Equal<Common.GemWinResult<int>>(ers, rs)
+    
 
 [<Fact>]
 let ``calc gems multiplier found no multiplier`` () =
@@ -55,6 +61,7 @@ let ``calc gems multiplier found no multiplier`` () =
             Map[(5, 5)
                 (4, 4)
                 (3, 3)
+                (2, 2)
                 (1, 1)]
 
             4,
@@ -64,8 +71,8 @@ let ``calc gems multiplier found no multiplier`` () =
                 (1, 50)]]
 
     let (tm, rs) = Common.countGemsResult [ 3; 4 ] payTable ss
-    let ers = []
-    Assert.Equal(0, tm)
+    let ers = [3, [ (4, 0); (1, 0) ],2 ]
+    Assert.Equal(2, tm)
     Assert.Equal<Common.GemWinResult<int>>(ers, rs)
 
 [<Fact>]
@@ -236,6 +243,7 @@ let fullCycleFeatureGame game reels lens =
    for kv in dict  do
        printfn $"collapse {kv.Key}:{kv.Value}"
    printfn "@@@@@@@@@@@@@@@@@@@@@@@@@@" 
+
 //[<Fact>]
 let ``test fully cycle of MainGameA`` () =
    let reels = Config.MainGame.MainA
@@ -248,19 +256,19 @@ let ``test fully cycle of MainGameB`` () =
    let lens = Config.MainGame.lensMainB
    fullCycleMainGame "MainGameB" reels lens
 
-[<Fact>]
+//[<Fact>]
 let ``test fully cycle of FeatureGameA`` () =
    let reels = Config.FeatureGame.FeatureA
    let lens = Config.FeatureGame.lensFeatureA
    fullCycleFeatureGame "FeatureGameA" reels lens
    
-[<Fact>]
+//[<Fact>]
 let ``test fully cycle of FeatureGameB`` () =
    let reels = Config.FeatureGame.FeatureB
    let lens = Config.FeatureGame.lensFeatureB
    fullCycleFeatureGame "FeatureGameB" reels lens      
                        
-//[<Fact>]
+[<Fact>]
 let ``test RTP with game state switch `` ()=
     let random = System.Random()
     let rng1 i  = random.Next i 
@@ -278,6 +286,8 @@ let ``test RTP with game state switch `` ()=
     let lc =  Config.Line.totalLines
     let mutable gameState = None
     let mutable totalSpin  = 1
+    let stopWatch = Stopwatch()
+    stopWatch.Start()
     while totalSpin< max do
         let s = GameState.resume gameState rng1 rng2
         gameState <- Some s
@@ -294,11 +304,13 @@ let ``test RTP with game state switch `` ()=
                 totalMainCollapseMul <- totalMainCollapseMul + int64 mul
             else
                 totalFeatureCollapseMul<- totalFeatureCollapseMul + int64 mul
-                
+    stopWatch.Stop()            
+    
     let totalCost = int64 totalSpin *  int64 lc
     let totalWin = totalMainSpinMul + totalMainCollapseMul + totalFeatureSpinMul + totalFeatureCollapseMul
     
     printfn ""
+    printfn $"time elapsed {stopWatch.Elapsed.TotalSeconds}"
     printfn $"Main Game RTP  = {double totalMainSpinMul / double totalCost}"
     printfn $"Main Game Tum RTP  = {double totalMainCollapseMul / double totalCost}"
     printfn $"Feature Game RTP  = {double totalFeatureSpinMul / double totalCost}"

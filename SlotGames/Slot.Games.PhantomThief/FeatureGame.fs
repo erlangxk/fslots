@@ -18,7 +18,7 @@ module FeatureGame =
         else 4
 
     let freeSpin (bonusNum: int) (rng: unit -> float) =
-        if bonusNum < 3 then 0 else randomFreeGame rng
+        if bonusNum < Common.BONUS_MIN_COUNTS then 0 else randomFreeGame rng
 
     let calcLineWin symbol count =
         Config.FeatureGame.linePayTable |> Core.getNestedMultiplier symbol count

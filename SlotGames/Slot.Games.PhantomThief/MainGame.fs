@@ -49,7 +49,7 @@ module MainGame =
         let newIdxMatrix = Collapse.collapse idxMatrix idx lens
         shoot reels newIdxMatrix
 
-    let freeSpin (bonusNum: int) = if bonusNum < 3 then 0 else 6
+    let freeSpin (bonusNum: int) = if bonusNum < Common.BONUS_MIN_COUNTS then 0 else 6
 
 
     let spinWithCollapse reels lens idx =
