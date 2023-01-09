@@ -86,9 +86,9 @@ module FeatureGame =
     ]
     
     let gemsPayTable = Map[
-        GreenGem, Map[(7,6); (6,5); (5,4);  (4,3);  (3,1)]
-        BlueGem,  Map[(7,7); (6,6); (5,5);  (4,4);  (3,2)]
-        OrangeGem,Map[(6,10); (5,9); (4,7);  (3,3)]
+        GreenGem, Map[(5,5);  (4,3);  (3,1)]
+        BlueGem,  Map[(5,8);  (4,5);  (3,2)]
+        OrangeGem,Map[(5,15); (4,8);  (3,3)]
     ]
     
     let allGems = List.ofSeq(gemsPayTable.Keys)

@@ -43,9 +43,8 @@ module FeatureGame =
     let shoot reels idxMatrix rng =
         let ss = Core.snapshot reels idxMatrix
         let lineMul, lineResult = computeLineResult ss
-        let sequence = Core.lineup ss
-        let bonus = countBonus sequence
-        let gemsMul, gemsResult = computeGemsResult sequence
+        let bonus = Core.lineup ss |> countBonus 
+        let gemsMul, gemsResult = computeGemsResult ss
 
         idxMatrix, ss, lineMul, lineResult, gemsMul, gemsResult, bonus, (freeSpin bonus.Length rng)
 

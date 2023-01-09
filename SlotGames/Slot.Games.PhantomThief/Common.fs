@@ -8,7 +8,7 @@ open System.Runtime.CompilerServices
 do ()
 
 module Common =
-    
+
     let internal BONUS_MIN_COUNTS = 3
 
     type Idx = int * int
@@ -18,17 +18,24 @@ module Common =
               if (isBonus e) then
                   yield (i, j) ]
 
-    let allBonusIdx (idx: list<int * int>) = if (idx.Length < BONUS_MIN_COUNTS) then [] else idx
+    let allBonusIdx (idx: list<int * int>) =
+        if (idx.Length < BONUS_MIN_COUNTS) then [] else idx
 
-    let internal countGems<'a when 'a: comparison> (gems: list<'a>) (sequence: list<int * int * 'a>) =
-        let folder (state: Map<'a, list<Idx>>) (i, j, e) =
-            match Map.tryFind e state with
-            | Some(l) -> state |> Map.add e ((i, j) :: l)
-            | None -> state
+    let internal countGems<'a when 'a: comparison> (gems: list<'a>) (snapshot: 'a[][]) =
+        let result =
+            seq {
+                for i in 0 .. snapshot.Length - 1 do
+                    for g in gems do
+                        let oj = Array.tryFindIndex ((=) g) snapshot[i]
 
-        let init = gems |> List.map (fun g -> g, List.empty<Idx>) |> Map.ofList
-
-        sequence |> Seq.fold folder init
+                        if oj.IsSome then
+                            yield (i, oj.Value, g)
+            }
+            
+        result
+        |> Seq.groupBy (fun (_, _, s) -> s)
+        |> Map.ofSeq
+        |> Map.mapValues (Seq.map (fun (i, j, _) -> (i, j)) >> List.ofSeq)
 
     type GemWin<'a> = 'a * list<Idx> * int
     type GemWinResult<'a> = list<GemWin<'a>>
@@ -43,7 +50,6 @@ module Common =
         : TotalGemWinResult<'a> =
         let folder (tm, ls) gem pos =
             let c = List.length pos
-            //let z = if c > 5 then 5 else c
             let mul = Core.getNestedMultiplier gem c payTable
 
             match mul with
@@ -52,12 +58,8 @@ module Common =
 
         Map.fold folder (0, []) result
 
-    let countGemsResult<'a when 'a: comparison>
-        (gems: list<'a>)
-        (payTable: Map<'a, Map<int, int>>)
-        (sequence: list<int * int * 'a>)
-        =
-        sequence |> countGems gems |> calcGemsMul payTable
+    let countGemsResult<'a when 'a: comparison> (gems: list<'a>) (payTable: Map<'a, Map<int, int>>) (snapshot: 'a[][]) =
+        snapshot |> countGems gems |> calcGemsMul payTable
 
     type LineWin<'a> = int * 'a * int * int
     type LineWinResult<'a> = list<LineWin<'a>>
