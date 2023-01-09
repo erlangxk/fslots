@@ -29,11 +29,14 @@ module MainGame =
         else
             Config.MainGame.MainB, Config.MainGame.lensMainB
 
+    let freeSpin (bonusNum: int) =
+        if bonusNum < Common.BONUS_MIN_COUNTS then 0 else 6
+
     let shoot reels idxMatrix =
         let ss = Core.snapshot reels idxMatrix
         let mul, lineResult = computeLineResult ss
         let bonus = countBonus (Core.lineup ss)
-        idxMatrix, ss, mul, lineResult, bonus
+        idxMatrix, ss, mul, lineResult, bonus, (freeSpin bonus.Length)
 
     let spin reels lens rng =
         let idxMatrix = Core.randomReelIdx lens Game.height rng
@@ -49,23 +52,17 @@ module MainGame =
         let newIdxMatrix = Collapse.collapse idxMatrix idx lens
         shoot reels newIdxMatrix
 
-    let freeSpin (bonusNum: int) = if bonusNum < Common.BONUS_MIN_COUNTS then 0 else 6
-
-
     let spinWithCollapse reels lens idx =
         let rec loopCollapse accCollapse accFreeSpin accMul oldIdxMatrix oldLineResult oldBonus =
-            let idxMatrix, _, mul, lineResult, bonus =
+            let idxMatrix, _, mul, lineResult, bonus, fs =
                 collapse oldIdxMatrix oldLineResult oldBonus reels lens
-
-            let fs = freeSpin bonus.Length
 
             if (mul > 0 || fs > 0) then
                 loopCollapse (accCollapse + 1) (accFreeSpin + fs) (accMul + mul) idxMatrix lineResult bonus
             else
                 accCollapse, accFreeSpin, accMul
 
-        let idxMatrix, _, spinLineMul, lineResult, bonus = shoot reels idx
-        let spinFs = freeSpin bonus.Length
+        let idxMatrix, _, spinLineMul, lineResult, bonus, spinFs = shoot reels idx
 
         let (collapse, collapseFs, collapseLineMul) =
             if (spinLineMul > 0 || spinFs > 0) then

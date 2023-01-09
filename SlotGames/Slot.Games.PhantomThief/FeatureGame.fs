@@ -40,20 +40,20 @@ module FeatureGame =
     let countBonus (sequence: list<int * int * int>) =
         Common.countBonus (fun x -> x = Config.FeatureGame.Bonus) sequence
 
-    let shoot reels idxMatrix =
+    let shoot reels idxMatrix rng =
         let ss = Core.snapshot reels idxMatrix
         let lineMul, lineResult = computeLineResult ss
         let sequence = Core.lineup ss
         let bonus = countBonus sequence
         let gemsMul, gemsResult = computeGemsResult sequence
 
-        idxMatrix, ss, lineMul, lineResult, gemsMul, gemsResult, bonus
+        idxMatrix, ss, lineMul, lineResult, gemsMul, gemsResult, bonus, (freeSpin bonus.Length rng)
 
-    let spin reels lens rng =
+    let spin reels lens rng rng2=
         let idxMatrix = Core.randomReelIdx lens Game.height rng
-        shoot reels idxMatrix
+        shoot reels idxMatrix rng2
 
-    let collapse idxMatrix lineResult gemsResult bonus reels lens =
+    let collapse idxMatrix lineResult gemsResult bonus reels lens rng =
         let idx =
             seq {
                 yield! Common.allLineIdx Config.Line.lineMap lineResult
@@ -62,7 +62,7 @@ module FeatureGame =
             }
 
         let newIdxMatrix = Collapse.collapse idxMatrix idx lens
-        shoot reels newIdxMatrix
+        shoot reels newIdxMatrix rng
 
     let spinWithCollapse reels lens rng idx=
         let rec loopCollapse
@@ -75,10 +75,8 @@ module FeatureGame =
             oldGemsResult
             oldBonus
             =
-            let idxMatrix, _, lineMul, lineResult, gemsMul, gemsResult, bonus =
-                collapse oldIdxMatrix oldLineResult oldGemsResult oldBonus reels lens
-
-            let fs = freeSpin bonus.Length rng
+            let idxMatrix, _, lineMul, lineResult, gemsMul, gemsResult, bonus, fs =
+                collapse oldIdxMatrix oldLineResult oldGemsResult oldBonus reels lens rng
 
             if ((lineMul + gemsMul) > 0 || fs > 0) then
                 loopCollapse
@@ -93,8 +91,7 @@ module FeatureGame =
             else
                 accCollapse, accFreeSpin, accLineMul, accGemsMul
 
-        let idxMatrix, _, spinLineMul, lineResult, spinGemsMul, gemsResult, bonus = shoot reels idx
-        let spinFs = freeSpin bonus.Length rng
+        let idxMatrix, _, spinLineMul, lineResult, spinGemsMul, gemsResult, bonus, spinFs= shoot reels idx rng
 
         let (collapseCount, collapseFs, collapseLineMul, collapseGemsMul) =
             if (spinLineMul + spinGemsMul > 0 || spinFs > 0) then
